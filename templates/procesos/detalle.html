@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load humanize static %}
+
+{% block titulo %}{{ proceso.numero_proceso }} — LicitaPro{% endblock %}
+
+{% block migas %}
+    <a href="{% url 'procesos:lista' %}">Procesos</a>
+    <span class="texto-terciario">/</span>
+    <span class="actual">{{ proceso.numero_proceso }}</span>
+{% endblock %}
+
+{% block extra_head %}
+    <script src="{% static 'js/chatter.js' %}"></script>
+{% endblock %}
+
+{% block contenido %}
+<div x-data="{tab: '{{ tab_inicial }}'}" class="contenedor-ancho flex flex-col gap-4">
+
+    {% include "procesos/partials/statusbar.html" %}
+
+    <div class="panel">
+        <form method="post" class="panel__cuerpo rejilla-2col">
+            {% csrf_token %}
+            <div class="col-completa">
+                {% include "componentes/campo_form.html" with campo=form.objeto %}
+            </div>
+            {% include "componentes/campo_form.html" with campo=form.numero_proceso %}
+            {% include "componentes/campo_form.html" with campo=form.entidad %}
+            {% include "componentes/campo_form.html" with campo=form.modalidad %}
+            <div>
+                {% include "componentes/campo_form.html" with campo=form.presupuesto_oficial %}
+                {% include "componentes/verificacion_humana.html" with proceso=proceso %}
+            </div>
+            {% include "componentes/campo_form.html" with campo=form.url_secop %}
+            {% include "componentes/campo_form.html" with campo=form.moneda %}
+            {% include "componentes/campo_form.html" with campo=form.responsable %}
+            {% include "componentes/campo_form.html" with campo=form.plazo_ejecucion_dias %}
+            {% include "componentes/campo_form.html" with campo=form.fecha_publicacion %}
+            {% include "componentes/campo_form.html" with campo=form.fecha_limite_observaciones %}
+            <div>
+                {% include "componentes/campo_form.html" with campo=form.fecha_cierre %}
+                {% include "componentes/verificacion_humana.html" with proceso=proceso %}
+            </div>
+            {% include "componentes/campo_form.html" with campo=form.fecha_adjudicacion %}
+
+            <div class="col-completa">
+                {% include "componentes/boton.html" with texto="Guardar" tipo="submit" variante="primario" %}
+            </div>
+        </form>
+    </div>
+
+    <div class="panel">
+        <div class="pestanas__nav">
+            <button type="button" @click="tab='requisitos'" :class="tab==='requisitos' && 'activo'" class="pestanas__btn">Requisitos</button>
+            <button type="button" @click="tab='documentos'" :class="tab==='documentos' && 'activo'" class="pestanas__btn">Documentos</button>
+            <button type="button" @click="tab='riesgos'" :class="tab==='riesgos' && 'activo'" class="pestanas__btn">Riesgos</button>
+            <button type="button" @click="tab='actividades'" :class="tab==='actividades' && 'activo'" class="pestanas__btn">Actividades</button>
+        </div>
+
+        <div class="pestanas__cuerpo">
+            <div x-show="tab==='requisitos'" x-cloak>
+                {% include "procesos/partials/tab_requisitos.html" %}
+            </div>
+            <div x-show="tab==='documentos'" x-cloak class="tabla__vacio" style="text-align:center;padding:var(--esp-8) 0;color:var(--texto-terciario)">
+                Documentos — aún no implementado.
+            </div>
+            <div x-show="tab==='riesgos'" x-cloak>
+                {% include "procesos/partials/tab_riesgos.html" %}
+            </div>
+            <div x-show="tab==='actividades'" x-cloak>
+                {% include "procesos/partials/tab_actividades.html" %}
+            </div>
+        </div>
+    </div>
+
+    {% include "social/partials/chatter.html" %}
+</div>
+{% endblock %}

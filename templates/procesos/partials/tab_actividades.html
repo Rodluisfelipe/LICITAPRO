@@ -1,0 +1,42 @@
+{% load partials %}
+{% partialdef tab_actividades inline %}
+<div x-data="{abierto: false}" style="margin-bottom: var(--esp-4)">
+    <button type="button" @click="abierto = !abierto" class="btn secundario">Programar seguimiento</button>
+    <form x-show="abierto" x-cloak method="post"
+          action="{% url 'social:crear_actividad' proceso.pk %}"
+          class="rejilla-2col panel"
+          style="margin-top: var(--esp-3); background: var(--superficie-2); padding: var(--esp-3)">
+        {% csrf_token %}
+        {% include "componentes/campo_form.html" with campo=form_actividad.titulo %}
+        {% include "componentes/campo_form.html" with campo=form_actividad.tipo %}
+        {% include "componentes/campo_form.html" with campo=form_actividad.asignado_a %}
+        {% include "componentes/campo_form.html" with campo=form_actividad.vence_en %}
+        <div class="col-completa">
+            {% include "componentes/campo_form.html" with campo=form_actividad.notas %}
+        </div>
+        <div class="col-completa">
+            {% include "componentes/boton.html" with texto="Crear actividad" tipo="submit" variante="primario" %}
+        </div>
+    </form>
+</div>
+
+<div>
+    {% for actividad in actividades %}
+        <div class="flex justify-entre items-centro" style="padding: var(--esp-2) 0; border-bottom: 1px solid var(--borde)">
+            <div>
+                <span style="font-weight: var(--peso-medio)">{{ actividad.titulo }}</span>
+                <span class="texto-terciario texto-xs"> — {{ actividad.get_tipo_display }}</span>
+                {% if actividad.vencida %}
+                    <span class="texto-xs" style="color: var(--rojo); font-weight: var(--peso-medio); margin-left:4px">vencida</span>
+                {% endif %}
+            </div>
+            <div class="texto-xs texto-sec" style="white-space:nowrap">
+                {{ actividad.asignado_a.get_full_name|default:actividad.asignado_a.username }}
+                · {{ actividad.vence_en|date:"d/m/Y H:i" }}
+            </div>
+        </div>
+    {% empty %}
+        <p class="vacio">Sin actividades programadas.</p>
+    {% endfor %}
+</div>
+{% endpartialdef %}

@@ -1,0 +1,10 @@
+{% load ui %}
+{% if proceso.lectura_ia %}
+<div class="franja-ia">
+    <svg class="icono"><use href="#i-ia"></use></svg>
+    <span class="texto">{{ proceso.lectura_ia }}</span>
+    {% if proceso.confianza_ia is not None %}
+        <span class="confianza">{{ proceso.confianza_ia|a_porcentaje }}%</span>
+    {% endif %}
+</div>
+{% endif %}

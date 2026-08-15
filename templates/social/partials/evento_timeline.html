@@ -1,0 +1,31 @@
+{% load partials %}
+{% partialdef evento_timeline inline %}
+<div class="chatter__linea">
+    {% if evento.tipo == "comentario" %}
+        <div class="avatar" style="width:28px;height:28px;background:var(--primario-bg);color:var(--primario-texto)">
+            {{ evento.obj.autor.get_full_name|default:evento.obj.autor.username|slice:":1"|upper }}
+        </div>
+        <div class="flex-1">
+            <div class="flex items-centro gap-2">
+                <span class="chatter__autor">{{ evento.obj.autor.get_full_name|default:evento.obj.autor.username }}</span>
+                <span class="chatter__cuando">{{ evento.obj.creado_en|date:"d/m/Y H:i" }}</span>
+            </div>
+            <p class="chatter__cuerpo">{{ evento.obj.cuerpo }}</p>
+        </div>
+    {% else %}
+        <div class="chatter__sistema">⚙</div>
+        <div class="flex-1">
+            <div class="flex items-centro gap-2 flex-envolver">
+                <span class="chatter__autor" style="color:var(--texto-sec)">{{ evento.obj.actor|default:"Sistema" }}</span>
+                <span class="chatter__cuando">{{ evento.obj.timestamp|date:"d/m/Y H:i" }}</span>
+                <span class="chatter__cuando">{{ evento.obj.get_action_display }}</span>
+            </div>
+            <ul class="chatter__cambios">
+                {% for campo, valores in evento.obj.changes_display_dict.items %}
+                    <li>{{ campo }}: {{ valores.0 }} → {{ valores.1 }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+</div>
+{% endpartialdef %}

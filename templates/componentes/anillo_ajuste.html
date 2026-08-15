@@ -1,0 +1,9 @@
+{% load ui %}
+{% with p=proceso.puntaje_ajuste %}
+<span class="anillo-envoltorio" title="{% if p is not None %}Ajuste (IA): {{ p }}/100{% else %}Sin puntaje de ajuste{% endif %}">
+    <svg class="anillo {{ p|banda_ajuste }}" width="34" height="34" viewBox="0 0 34 34">
+        <circle class="pista" cx="17" cy="17" r="14"></circle>
+        <circle class="progreso" cx="17" cy="17" r="14" stroke-dashoffset="{{ p|offset_anillo }}"></circle>
+    </svg>
+</span>
+{% endwith %}

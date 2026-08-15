@@ -1,0 +1,44 @@
+{% load ui %}
+{% with d=proceso.dias_para_cierre %}
+<div class="tarjeta{% if d is not None and d <= 3 %} critica{% elif d is not None and d <= 7 %} pronta{% endif %}{% if proceso.analisis_en_curso %} analizando{% endif %}"
+     data-tarjeta-proceso="{{ proceso.pk }}"
+     data-transiciones='{{ proceso.transiciones_json|default:"{}" }}'>
+    <div class="tarjeta__cab">
+        <div>
+            <div class="tarjeta__numero">{{ proceso.numero_proceso }}</div>
+            <div class="tarjeta__entidad">{{ proceso.entidad.nombre }}</div>
+        </div>
+        {% include "componentes/anillo_ajuste.html" with proceso=proceso %}
+    </div>
+
+    <a href="{% url 'procesos:detalle' proceso.pk %}" class="tarjeta__objeto">{{ proceso.objeto }}</a>
+
+    {% if proceso.analisis_en_curso %}
+        <div class="franja-ia">
+            <svg class="icono"><use href="#i-ia"></use></svg>
+            <span class="texto">
+                Analizando{% if proceso.analisis_pagina_actual and proceso.analisis_paginas %}
+                    página {{ proceso.analisis_pagina_actual }} de {{ proceso.analisis_paginas }}
+                {% else %} documento...{% endif %}
+            </span>
+        </div>
+        <div class="tarjeta__progreso">
+            <div style="width:{{ proceso.analisis_pagina_actual|porcentaje:proceso.analisis_paginas }}%"></div>
+        </div>
+    {% else %}
+        {% include "componentes/franja_ia.html" with proceso=proceso %}
+    {% endif %}
+
+    {% if proceso.req_total %}
+        {% include "componentes/barra_cumplimiento.html" with proceso=proceso %}
+    {% endif %}
+
+    <div class="tarjeta__pie">
+        {% include "componentes/plazo.html" with proceso=proceso %}
+        <div class="flex items-centro gap-2">
+            {% include "componentes/semaforo_riesgo.html" with proceso=proceso %}
+            {% if proceso.responsable %}{% include "componentes/avatar.html" with usuario=proceso.responsable %}{% endif %}
+        </div>
+    </div>
+</div>
+{% endwith %}

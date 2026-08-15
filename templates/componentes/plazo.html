@@ -1,0 +1,5 @@
+{% with d=proceso.dias_para_cierre %}
+<span class="plazo {% if d is None %}normal{% elif d <= 3 %}critico{% elif d <= 7 %}pronto{% else %}normal{% endif %}">
+    {% if d is None %}Sin fecha{% elif d < 0 %}Cerrado{% else %}{{ d }} día{{ d|pluralize }}{% endif %}
+</span>
+{% endwith %}

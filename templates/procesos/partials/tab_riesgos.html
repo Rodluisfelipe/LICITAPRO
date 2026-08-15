@@ -1,0 +1,37 @@
+{% load partials %}
+{% partialdef tab_riesgos inline %}
+<table class="tabla">
+    <thead>
+        <tr>
+            <th>Tipo</th>
+            <th>Severidad</th>
+            <th>Descripción</th>
+            <th>Cita</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for riesgo in proceso.riesgos.all %}
+            {% if not riesgo.descartado_por_usuario %}
+                <tr>
+                    <td style="white-space:nowrap">{{ riesgo.get_tipo_display }}</td>
+                    <td>
+                        {% if riesgo.severidad == "alta" %}
+                            {% include "componentes/badge_estado.html" with color="rojo" texto=riesgo.get_severidad_display %}
+                        {% elif riesgo.severidad == "media" %}
+                            {% include "componentes/badge_estado.html" with color="amarillo" texto=riesgo.get_severidad_display %}
+                        {% else %}
+                            {% include "componentes/badge_estado.html" with color="gris" texto=riesgo.get_severidad_display %}
+                        {% endif %}
+                    </td>
+                    <td class="recorte" title="{{ riesgo.descripcion }}">{{ riesgo.descripcion|truncatechars:120 }}</td>
+                    <td class="texto-xs texto-terciario" style="white-space:nowrap">
+                        {{ riesgo.cita_numeral|default:"—" }}{% if riesgo.cita_pagina %} · pág. {{ riesgo.cita_pagina }}{% endif %}
+                    </td>
+                </tr>
+            {% endif %}
+        {% empty %}
+            <tr><td colspan="4" class="vacio">Sin riesgos detectados.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endpartialdef %}

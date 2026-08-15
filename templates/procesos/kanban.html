@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static ui %}
+
+{% block titulo %}Procesos — LicitaPro{% endblock %}
+{% block migas %}<span class="actual">Procesos</span>{% endblock %}
+
+{% block extra_head %}
+    <script src="https://unpkg.com/sortablejs@1.15.6/Sortable.min.js"></script>
+    <script src="{% static 'js/kanban.js' %}"></script>
+{% endblock %}
+
+{% block contenido %}
+<div class="pagina-kanban">
+    {% include "componentes/panel_control.html" %}
+
+    <p class="texto-xs texto-sec" style="margin: 0 0 8px">
+        {% if incluir_todos %}
+            Mostrando todos los estados · <a href="?vista=kanban">volver al tablero activo</a>
+        {% else %}
+            <a href="?vista=kanban&todos=1">Ver también descartados, adjudicados y no adjudicados</a>
+        {% endif %}
+    </p>
+
+    <div class="tablero flex-1">
+        {% for columna in columnas %}
+            <div class="tablero__columna">
+                <div class="tablero__cab">
+                    <div class="tablero__titulo-fila">
+                        <span class="tablero__titulo">{{ columna.etiqueta }}</span>
+                        <span class="tablero__contador">{{ columna.contador }}</span>
+                    </div>
+                    <div class="tablero__meta">$ {{ columna.presupuesto_total|floatformat:0 }}</div>
+                    {% if columna.contador %}
+                        <div class="tablero__distribucion">
+                            <div class="critica" style="width:{{ columna.criticos|porcentaje:columna.contador }}%"></div>
+                            <div class="pronta" style="width:{{ columna.prontos|porcentaje:columna.contador }}%"></div>
+                            <div class="normal" style="width:{{ columna.normales|porcentaje:columna.contador }}%"></div>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="tablero__cuerpo" data-columna-estado="{{ columna.valor }}">
+                    {% for proceso in columna.procesos %}
+                        {% include "componentes/tarjeta_proceso.html" with proceso=proceso %}
+                    {% empty %}
+                        <div class="tablero__vacio">Sin procesos</div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

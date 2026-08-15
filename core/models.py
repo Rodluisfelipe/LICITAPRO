@@ -36,8 +36,27 @@ class Origen(models.TextChoices):
 
 
 class Usuario(AbstractUser):
+    class Tema(models.TextChoices):
+        CLARO = "claro", "Claro"
+        OSCURO = "oscuro", "Oscuro"
+
+    class Densidad(models.TextChoices):
+        COMPACTA = "compacta", "Compacta"
+        NORMAL = "normal", "Normal"
+        COMODA = "comoda", "Cómoda"
+
+    class Vista(models.TextChoices):
+        KANBAN = "kanban", "Kanban"
+        LISTA = "lista", "Lista"
+
     cargo = models.CharField(max_length=120, blank=True)
     activo_comercial = models.BooleanField(default=True)
+
+    # --- preferencias de interfaz. Se renderizan como atributos en <html>
+    # desde el servidor (nunca vía JS al cargar) para que no haya parpadeo.
+    tema = models.CharField(max_length=10, choices=Tema.choices, default=Tema.CLARO)
+    densidad = models.CharField(max_length=10, choices=Densidad.choices, default=Densidad.NORMAL)
+    vista_preferida = models.CharField(max_length=10, choices=Vista.choices, default=Vista.KANBAN)
 
 
 class Entidad(TimeStamped):

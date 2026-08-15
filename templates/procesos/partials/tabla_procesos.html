@@ -1,76 +1,65 @@
 {% load partials humanize %}
 {% partialdef tabla_procesos inline %}
 <div id="tabla-procesos-wrapper">
-    <div class="overflow-x-auto border border-slate-200 rounded bg-white">
-        <table class="min-w-full divide-y divide-slate-200 text-sm">
-            <thead class="bg-slate-50">
+    <div class="panel" style="overflow-x:auto">
+        <table class="tabla">
+            <thead>
                 <tr>
                     {% include "componentes/columna_orden.html" with campo="numero_proceso" etiqueta="Número" orden=orden formulario="filtros-procesos" objetivo="tabla-procesos-wrapper" %}
                     {% include "componentes/columna_orden.html" with campo="entidad__nombre" etiqueta="Entidad" orden=orden formulario="filtros-procesos" objetivo="tabla-procesos-wrapper" %}
-                    <th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide">Objeto</th>
+                    <th>Objeto</th>
                     {% include "componentes/columna_orden.html" with campo="estado" etiqueta="Estado" orden=orden formulario="filtros-procesos" objetivo="tabla-procesos-wrapper" %}
                     {% include "componentes/columna_orden.html" with campo="fecha_cierre" etiqueta="Cierre" orden=orden formulario="filtros-procesos" objetivo="tabla-procesos-wrapper" %}
                     {% include "componentes/columna_orden.html" with campo="responsable__first_name" etiqueta="Responsable" orden=orden formulario="filtros-procesos" objetivo="tabla-procesos-wrapper" %}
                     {% include "componentes/columna_orden.html" with campo="presupuesto_oficial" etiqueta="Presupuesto" orden=orden formulario="filtros-procesos" objetivo="tabla-procesos-wrapper" %}
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody>
                 {% for proceso in pagina %}
-                <tr class="hover:bg-slate-50">
-                    <td class="px-3 py-2 font-medium text-slate-800 whitespace-nowrap">
-                        {{ proceso.numero_proceso }}
+                <tr>
+                    <td style="white-space:nowrap">
+                        <a href="{% url 'procesos:detalle' proceso.pk %}" style="font-weight:var(--peso-medio)">
+                            {{ proceso.numero_proceso }}
+                        </a>
                     </td>
-                    <td class="px-3 py-2 text-slate-600">{{ proceso.entidad.nombre }}</td>
-                    <td class="px-3 py-2 text-slate-600 max-w-xs truncate" title="{{ proceso.objeto }}">
-                        {{ proceso.objeto|truncatechars:80 }}
-                    </td>
-                    <td class="px-3 py-2">
-                        {% include "componentes/badge_estado.html" with color=proceso.color_estado texto=proceso.get_estado_display %}
-                    </td>
-                    <td class="px-3 py-2 whitespace-nowrap">
+                    <td>{{ proceso.entidad.nombre }}</td>
+                    <td class="recorte" title="{{ proceso.objeto }}">{{ proceso.objeto|truncatechars:80 }}</td>
+                    <td>{% include "componentes/badge_estado.html" with color=proceso.color_estado texto=proceso.get_estado_display %}</td>
+                    <td style="white-space:nowrap">
                         {% if proceso.fecha_cierre %}
-                            <div class="text-slate-700">{{ proceso.fecha_cierre|date:"d/m/Y H:i" }}</div>
-                            <div class="flex items-center gap-1 text-xs {% if proceso.cierre_proximo %}text-red-600 font-semibold{% else %}text-slate-400{% endif %}">
-                                {% if proceso.dias_para_cierre < 0 %}
-                                    Cerrado
-                                {% else %}
-                                    {{ proceso.dias_para_cierre }} día{{ proceso.dias_para_cierre|pluralize }}
-                                {% endif %}
-                                {% if not proceso.fechas_verificadas_por %}
-                                    <span title="Fecha sin verificar por un humano" class="text-amber-500">⚠</span>
-                                {% endif %}
-                            </div>
+                            <div>{% include "componentes/dato_sinverificar.html" with valor=proceso.fecha_cierre|date:"d/m/Y H:i" verificado=proceso.fechas_verificadas_por %}</div>
+                            {% include "componentes/plazo.html" with proceso=proceso %}
                         {% else %}
-                            <span class="text-slate-300">—</span>
+                            <span class="texto-terciario">—</span>
                         {% endif %}
                     </td>
-                    <td class="px-3 py-2 text-slate-600 whitespace-nowrap">
+                    <td style="white-space:nowrap">
                         {% if proceso.responsable %}
                             {{ proceso.responsable.get_full_name|default:proceso.responsable.username }}
                         {% else %}
-                            <span class="text-slate-300">—</span>
+                            <span class="texto-terciario">—</span>
                         {% endif %}
                     </td>
-                    <td class="px-3 py-2 text-slate-600 whitespace-nowrap text-right">
+                    <td class="texto-derecha numeros-tabulares" style="white-space:nowrap">
                         {% if proceso.presupuesto_oficial %}
-                            $ {{ proceso.presupuesto_oficial|intcomma }}
+                            <span class="dato{% if not proceso.fechas_verificadas_por %} sinver{% endif %}">
+                                $ {{ proceso.presupuesto_oficial|intcomma }}
+                            </span>
                         {% else %}
-                            <span class="text-slate-300">—</span>
+                            <span class="texto-terciario">—</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="px-3 py-8 text-center text-slate-400">
-                        Sin procesos para los filtros seleccionados.
-                    </td>
+                    <td colspan="7" class="vacio">Sin procesos para los filtros seleccionados.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 
-    <div class="flex items-center justify-between px-1 py-3 text-xs text-slate-500">
+    <div class="paginacion">
         <div>
             {% if pagina.paginator.count %}
                 {{ pagina.start_index }}–{{ pagina.end_index }} de {{ pagina.paginator.count }}
@@ -78,23 +67,23 @@
                 0 resultados
             {% endif %}
         </div>
-        <div class="flex items-center gap-2">
+        <div class="paginacion__controles">
             {% if pagina.has_previous %}
-                <a href="{{ request.path }}?pagina={{ pagina.previous_page_number }}&orden={{ orden }}"
-                   hx-get="{{ request.path }}?pagina={{ pagina.previous_page_number }}&orden={{ orden }}"
-                   hx-include="#filtros-procesos" hx-target="#tabla-procesos-wrapper" hx-swap="outerHTML" hx-push-url="true"
-                   class="px-2 py-1 rounded border border-slate-300 hover:bg-slate-50">Anterior</a>
+                <a class="paginacion__enlace"
+                   href="{{ request.path }}?pagina={{ pagina.previous_page_number }}&orden={{ orden }}&vista=lista"
+                   hx-get="{{ request.path }}?pagina={{ pagina.previous_page_number }}&orden={{ orden }}&vista=lista"
+                   hx-include="#filtros-procesos" hx-target="#tabla-procesos-wrapper" hx-swap="outerHTML" hx-push-url="true">Anterior</a>
             {% else %}
-                <span class="px-2 py-1 rounded border border-slate-200 text-slate-300">Anterior</span>
+                <span class="paginacion__enlace inerte">Anterior</span>
             {% endif %}
             <span>Página {{ pagina.number }} de {{ pagina.paginator.num_pages|default:1 }}</span>
             {% if pagina.has_next %}
-                <a href="{{ request.path }}?pagina={{ pagina.next_page_number }}&orden={{ orden }}"
-                   hx-get="{{ request.path }}?pagina={{ pagina.next_page_number }}&orden={{ orden }}"
-                   hx-include="#filtros-procesos" hx-target="#tabla-procesos-wrapper" hx-swap="outerHTML" hx-push-url="true"
-                   class="px-2 py-1 rounded border border-slate-300 hover:bg-slate-50">Siguiente</a>
+                <a class="paginacion__enlace"
+                   href="{{ request.path }}?pagina={{ pagina.next_page_number }}&orden={{ orden }}&vista=lista"
+                   hx-get="{{ request.path }}?pagina={{ pagina.next_page_number }}&orden={{ orden }}&vista=lista"
+                   hx-include="#filtros-procesos" hx-target="#tabla-procesos-wrapper" hx-swap="outerHTML" hx-push-url="true">Siguiente</a>
             {% else %}
-                <span class="px-2 py-1 rounded border border-slate-200 text-slate-300">Siguiente</span>
+                <span class="paginacion__enlace inerte">Siguiente</span>
             {% endif %}
         </div>
     </div>

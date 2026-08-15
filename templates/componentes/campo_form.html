@@ -1,13 +1,12 @@
-{% load widget_tweaks %}
-<div class="mb-3">
-    <label for="{{ campo.id_for_label }}" class="block text-xs font-medium text-slate-600 mb-1">
-        {{ campo.label }}{% if campo.field.required %} <span class="text-red-500">*</span>{% endif %}
+<div class="campo">
+    <label for="{{ campo.id_for_label }}" class="campo__etiqueta">
+        {{ campo.label }}{% if campo.field.required %} <span class="campo__requerido">*</span>{% endif %}
     </label>
-    {% render_field campo class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400" %}
+    {{ campo }}
     {% if campo.help_text %}
-        <p class="mt-1 text-xs text-slate-400">{{ campo.help_text }}</p>
+        <p class="campo__ayuda">{{ campo.help_text }}</p>
     {% endif %}
     {% for error in campo.errors %}
-        <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+        <p class="campo__error">{{ error }}</p>
     {% endfor %}
 </div>

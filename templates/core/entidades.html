@@ -3,16 +3,15 @@
 {% block titulo %}Entidades — LicitaPro{% endblock %}
 
 {% block migas %}
-    <span class="text-slate-700 font-medium">Entidades</span>
+    <span class="actual">Entidades</span>
 {% endblock %}
 
 {% block contenido %}
-<div class="p-4 max-w-xl">
+<div class="contenedor" style="max-width: 480px">
     <input type="text"
            name="q"
            placeholder="Buscar entidad por nombre..."
            autocomplete="off"
-           class="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400"
            hx-get="{% url 'core:entidades_autocompletar' %}"
            hx-trigger="keyup changed delay:300ms"
            hx-target="#resultados-entidades"

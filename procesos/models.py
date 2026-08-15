@@ -83,6 +83,17 @@ class Proceso(TimeStamped):
         choices=[("verde", "Verde"), ("amarillo", "Amarillo"), ("rojo", "Rojo")],
     )
 
+    # --- triage de IA (kanban/lista). origen=IA por definición: puntaje_ajuste
+    # nunca se muestra como dato verificado por un humano (invariante 4).
+    puntaje_ajuste = models.PositiveSmallIntegerField(
+        null=True, blank=True, help_text="0-100. Lo calcula un AnalisisIA de tipo TRIAGE.",
+    )
+    lectura_ia = models.TextField(blank=True, help_text="1-2 frases de lectura del modelo.")
+    confianza_ia = models.FloatField(null=True, blank=True)
+    analisis_en_curso = models.BooleanField(default=False)
+    analisis_paginas = models.PositiveIntegerField(null=True, blank=True)
+    analisis_pagina_actual = models.PositiveIntegerField(null=True, blank=True)
+
     class Meta:
         ordering = ["-fecha_cierre"]
         indexes = [
@@ -131,6 +142,10 @@ class Proceso(TimeStamped):
     def perder(self):
         pass
 
+    @transition(field=estado, source=Estado.PRESENTADO, target=Estado.DESIERTO)
+    def declarar_desierto(self):
+        pass
+
     @transition(field=estado, source="*", target=Estado.SUSPENDIDO)
     def suspender(self):
         pass
@@ -169,6 +184,14 @@ class Proceso(TimeStamped):
     def cierre_proximo(self) -> bool:
         dias = self.dias_para_cierre
         return dias is not None and 0 <= dias < 5
+
+    # Camino "feliz" del proceso, para el statusbar. Los estados de salida
+    # (descartado, no_adjudicado, desierto, suspendido) quedan fuera a
+    # propósito: se muestran como acciones laterales, no como una etapa más.
+    ETAPAS_PIPELINE = [
+        Estado.DETECTADO, Estado.EN_EVALUACION, Estado.APTO,
+        Estado.EN_PREPARACION, Estado.PRESENTADO, Estado.ADJUDICADO,
+    ]
 
 
 class VersionDocumental(TimeStamped):
@@ -297,3 +320,48 @@ class Requisito(TimeStamped):
     @property
     def vigente(self) -> bool:
         return not hasattr(self, "reemplazado_por")
+
+
+class Riesgo(TimeStamped):
+    """
+    Semáforo de riesgos con taxonomía CERRADA (invariante 5 de CLAUDE.md).
+
+    No se le pregunta al modelo "¿qué riesgos ves?" — se le pide detectar y
+    citar riesgos de esta lista. Un semáforo determinista es auditable; uno
+    generativo es una opinión.
+    """
+
+    class Tipo(models.TextChoices):
+        EXPERIENCIA_DIRECCIONADA = "exp_direccionada", "Experiencia posiblemente direccionada"
+        SPECS_MARCA = "specs_marca", "Especificaciones atadas a marca"
+        PLAZO_IRREAL = "plazo_irreal", "Plazo de ejecución irreal"
+        GARANTIA_DESPROPORCIONADA = "garantia_despro", "Garantías desproporcionadas"
+        INDICADORES_RESTRICTIVOS = "indic_restrictivos", "Indicadores financieros restrictivos"
+        ANTICIPO_SIN_CLARIDAD = "anticipo", "Anticipo sin amortización clara"
+        MULTAS_AGRESIVAS = "multas", "Régimen sancionatorio agresivo"
+        CRONOGRAMA_CORTO = "cronograma_corto", "Tiempo insuficiente para preparar"
+        PRESUPUESTO_BAJO = "presupuesto_bajo", "Presupuesto por debajo de mercado"
+        PAGO_DIFERIDO = "pago_diferido", "Condiciones de pago desfavorables"
+
+    class Severidad(models.TextChoices):
+        BAJA = "baja", "Baja"
+        MEDIA = "media", "Media"
+        ALTA = "alta", "Alta"
+
+    proceso = models.ForeignKey(Proceso, on_delete=models.CASCADE, related_name="riesgos")
+    version_origen = models.ForeignKey(
+        VersionDocumental, null=True, blank=True, on_delete=models.SET_NULL, related_name="riesgos",
+    )
+    tipo = models.CharField(max_length=30, choices=Tipo.choices)
+    severidad = models.CharField(max_length=10, choices=Severidad.choices)
+    descripcion = models.TextField()
+    cita_numeral = models.CharField(max_length=40, blank=True)
+    cita_pagina = models.PositiveIntegerField(null=True, blank=True)
+    origen = models.CharField(max_length=20, choices=Origen.choices, default=Origen.IA)
+    descartado_por_usuario = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-severidad"]
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} ({self.get_severidad_display()})"

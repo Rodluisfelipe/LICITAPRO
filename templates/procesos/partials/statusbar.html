@@ -1,0 +1,49 @@
+<div class="panel statusbar">
+    <div class="statusbar__pipeline">
+        {% for etapa in estado_ui.pipeline %}
+            {% if not forloop.first %}<span class="statusbar__flecha">→</span>{% endif %}
+            {% if etapa.es_actual %}
+                <span class="statusbar__etapa actual">{{ etapa.etiqueta }}</span>
+            {% elif etapa.transicion %}
+                <form method="post" action="{% url 'procesos:transicionar' proceso.pk etapa.transicion %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="statusbar__etapa clicable">{{ etapa.etiqueta }}</button>
+                </form>
+            {% elif etapa.completada %}
+                <span class="statusbar__etapa completada">✓ {{ etapa.etiqueta }}</span>
+            {% else %}
+                <span class="statusbar__etapa futura">{{ etapa.etiqueta }}</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if estado_ui.fuera_de_pipeline %}
+            <span class="statusbar__flecha">→</span>
+            {% include "componentes/badge_estado.html" with color=proceso.color_estado texto=proceso.get_estado_display %}
+        {% endif %}
+    </div>
+
+    <div class="statusbar__laterales">
+        {% for lateral in estado_ui.laterales %}
+            {% if lateral.transicion == "descartar" %}
+                <div x-data="{abierto: false}" style="position:relative">
+                    <button type="button" @click="abierto = !abierto" class="btn peligro">{{ lateral.etiqueta }}</button>
+                    <div x-show="abierto" x-cloak @click.outside="abierto = false"
+                         class="panel"
+                         style="position:absolute; right:0; margin-top:4px; width:280px; padding:var(--esp-3); box-shadow:var(--sombra-md); z-index:var(--z-flotante); text-align:left">
+                        <form method="post" action="{% url 'procesos:transicionar' proceso.pk 'descartar' %}">
+                            {% csrf_token %}
+                            <label class="campo__etiqueta">Motivo del descarte</label>
+                            <textarea name="motivo" required rows="2" style="margin-bottom:var(--esp-2)"></textarea>
+                            {% include "componentes/boton.html" with texto="Confirmar" tipo="submit" variante="peligro" %}
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <form method="post" action="{% url 'procesos:transicionar' proceso.pk lateral.transicion %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn secundario">{{ lateral.etiqueta }}</button>
+                </form>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>

@@ -1,0 +1,29 @@
+{% load partials %}
+{% partialdef chatter inline %}
+<div id="chatter" class="panel panel__cuerpo">
+    <h3 style="font-size: var(--fuente-md); font-weight: var(--peso-semi); margin: 0 0 var(--esp-3)">Actividad</h3>
+
+    <form hx-post="{% url 'social:comentar' proceso.pk %}"
+          hx-target="#chatter-timeline"
+          hx-swap="afterbegin"
+          hx-on::after-request="if(event.detail.successful) this.reset()"
+          class="chatter__caja">
+        {% csrf_token %}
+        <textarea name="cuerpo" id="id-comentario-cuerpo" rows="2" required
+                  placeholder="Escribe un comentario... usa @usuario para mencionar"
+                  oninput="licitapro.actualizarMencion(this)"></textarea>
+        <div id="mencion-sugerencias" class="chatter__sugerencias"></div>
+        <div class="flex" style="justify-content:flex-end; margin-top: var(--esp-2)">
+            {% include "componentes/boton.html" with texto="Comentar" tipo="submit" variante="secundario" %}
+        </div>
+    </form>
+
+    <div id="chatter-timeline" class="flex flex-col gap-3">
+        {% for evento in linea_tiempo %}
+            {% include "social/partials/evento_timeline.html" with evento=evento %}
+        {% empty %}
+            <p class="texto-sec texto-xs">Sin actividad todavía.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endpartialdef %}

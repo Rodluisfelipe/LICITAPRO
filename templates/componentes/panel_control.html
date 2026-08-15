@@ -1,0 +1,19 @@
+<div class="panel-control">
+    <div class="segmentado">
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}vista=kanban"
+           onclick="licitapro.cambiarVista('kanban')"
+           class="{% if vista_actual == 'kanban' %}activo{% endif %}">
+            <svg class="icono"><use href="#i-tablero"></use></svg> Kanban
+        </a>
+        <a href="?{% if request.GET.q %}q={{ request.GET.q }}&{% endif %}vista=lista"
+           onclick="licitapro.cambiarVista('lista')"
+           class="{% if vista_actual == 'lista' %}activo{% endif %}">
+            <svg class="icono"><use href="#i-lista"></use></svg> Lista
+        </a>
+    </div>
+
+    <form method="get">
+        <input type="hidden" name="vista" value="{{ vista_actual }}">
+        {% include "componentes/faceta_busqueda.html" with nombre="q" valor=request.GET.q placeholder="Buscar número u objeto..." %}
+    </form>
+</div>

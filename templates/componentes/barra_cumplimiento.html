@@ -1,0 +1,8 @@
+{% load ui %}
+<div class="barra-cumplimiento"
+     title="{{ proceso.req_cumple }} cumple · {{ proceso.req_parcial }} parcial · {{ proceso.req_no }} no cumple · {{ proceso.req_pendiente }} pendiente">
+    <div class="cumple" style="width:{{ proceso.req_cumple|porcentaje:proceso.req_total }}%"></div>
+    <div class="parcial" style="width:{{ proceso.req_parcial|porcentaje:proceso.req_total }}%"></div>
+    <div class="no-cumple" style="width:{{ proceso.req_no|porcentaje:proceso.req_total }}%"></div>
+    <div class="pendiente" style="width:{{ proceso.req_pendiente|porcentaje:proceso.req_total }}%"></div>
+</div>

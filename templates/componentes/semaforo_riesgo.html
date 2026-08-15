@@ -1,0 +1,7 @@
+{% load ui %}
+{% with r=proceso.riesgo_rango|rango_a_severidad %}
+<span class="semaforo-riesgo{% if r %} {{ r }}{% endif %}"
+      title="{% if r %}Riesgo máximo: {{ r }}{% else %}Sin riesgos detectados{% endif %}">
+    <span class="punto"></span><span class="punto"></span><span class="punto"></span>
+</span>
+{% endwith %}

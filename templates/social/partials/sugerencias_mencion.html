@@ -1,0 +1,16 @@
+{% load partials %}
+{% partialdef sugerencias_mencion inline %}
+{% if usuarios %}
+    <div class="panel" style="box-shadow: var(--sombra-md); overflow: hidden">
+        {% for usuario in usuarios %}
+            <button type="button" class="chatter__sugerencia"
+                    onclick="licitapro.insertarMencion('{{ usuario.username }}', 'id-comentario-cuerpo')">
+                <span style="font-weight: var(--peso-medio)">@{{ usuario.username }}</span>
+                {% if usuario.get_full_name %}
+                    <span class="texto-terciario texto-xs"> — {{ usuario.get_full_name }}</span>
+                {% endif %}
+            </button>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endpartialdef %}

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from procesos.models import Proceso, Requisito, VersionDocumental
+from procesos.models import Proceso, Requisito, Riesgo, VersionDocumental
 
 
 @admin.register(Proceso)
@@ -28,3 +28,10 @@ class VersionDocumentalAdmin(admin.ModelAdmin):
     list_filter = ["tipo", "procesada"]
     search_fields = ["proceso__numero_proceso"]
     inlines = [RequisitoInline]
+
+
+@admin.register(Riesgo)
+class RiesgoAdmin(admin.ModelAdmin):
+    list_display = ["proceso", "tipo", "severidad", "origen", "descartado_por_usuario"]
+    list_filter = ["tipo", "severidad", "descartado_por_usuario"]
+    search_fields = ["proceso__numero_proceso"]

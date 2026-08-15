@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es" data-tema="claro" data-densidad="normal">
+<head>
+<meta charset="UTF-8">
+<title>LicitaPro — Sistema visual v3 (referencia)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS — este bloque se extrae literal a static/css/tokens.css
+   ============================================================ */
+:root {
+    /* --- tipografía --- */
+    --fuente: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --fuente-mono: ui-monospace, 'SF Mono', Consolas, monospace;
+    --fuente-xs: 11px;
+    --fuente-md: 15px;
+    --fuente-lg: 18px;
+    --fuente-xl: 22px;
+    --peso-normal: 400;
+    --peso-medio: 500;
+    --peso-semi: 600;
+    --peso-fuerte: 700;
+
+    /* --- espaciado (grid de 4px) --- */
+    --esp-1: 4px;  --esp-2: 8px;  --esp-3: 12px; --esp-4: 16px;
+    --esp-5: 20px; --esp-6: 24px; --esp-8: 32px; --esp-10: 40px;
+
+    /* --- radio --- */
+    --radio-sm: 4px;
+    --radio-md: 8px;
+    --radio-lg: 12px;
+    --radio-completo: 999px;
+
+    /* --- sombra (modo claro) --- */
+    --sombra-sm: 0 1px 2px rgba(15,23,42,.06);
+    --sombra-md: 0 4px 12px rgba(15,23,42,.10);
+    --sombra-lg: 0 12px 32px rgba(15,23,42,.18);
+
+    /* --- movimiento --- */
+    --dur-rapida: 120ms;
+    --dur-normal: 200ms;
+    --facil: cubic-bezier(.4,0,.2,1);
+
+    /* --- z-index --- */
+    --z-pegajoso: 10;
+    --z-flotante: 20;
+    --z-modal: 50;
+
+    /* --- superficie / texto (modo claro) --- */
+    --bg: #f1f5f9;
+    --superficie: #ffffff;
+    --superficie-2: #f8fafc;
+    --borde: #e2e8f0;
+    --borde-fuerte: #cbd5e1;
+    --texto: #1e293b;
+    --texto-sec: #64748b;
+    --texto-terciario: #94a3b8;
+    --texto-inverso: #ffffff;
+
+    /* --- acción primaria --- */
+    --primario-bg: #1e293b;
+    --primario-bg-hover: #334155;
+    --primario-texto: #ffffff;
+
+    /* --- semántico: estado / cumplimiento / severidad ---
+       Estos 5 nombres son el mismo vocabulario que ya usa
+       Proceso.COLOR_POR_ESTADO — no se inventan nombres nuevos. */
+    --gris: #475569;     --gris-bg: #f1f5f9;     --gris-bd: #e2e8f0;
+    --azul: #2563eb;     --azul-bg: #dbeafe;     --azul-bd: #bfdbfe;
+    --verde: #059669;    --verde-bg: #d1fae5;    --verde-bd: #a7f3d0;
+    --amarillo: #d97706; --amarillo-bg: #fef3c7; --amarillo-bd: #fde68a;
+    --rojo: #dc2626;     --rojo-bg: #fee2e2;     --rojo-bd: #fecaca;
+
+    /* --- IA — EXCLUSIVO para contenido generado por el modelo.
+       Ver CLAUDE.md § Diseño: si algo es violeta, lo escribió la
+       máquina. Nunca botones, nunca estados, nunca decoración. --- */
+    --ia: #7c3aed; --ia-bg: #f3e8ff; --ia-bd: #ddd6fe;
+
+    /* --- dato sin verificar (invariante 3) --- */
+    --sinver: var(--amarillo);
+    --sinver-bg: var(--amarillo-bg);
+}
+
+/* ---- modo oscuro: mismo vocabulario, valores distintos ---- */
+:root[data-tema="oscuro"] {
+    --sombra-sm: 0 1px 2px rgba(0,0,0,.4);
+    --sombra-md: 0 4px 16px rgba(0,0,0,.5);
+    --sombra-lg: 0 16px 40px rgba(0,0,0,.6);
+
+    --bg: #0b1220;
+    --superficie: #131c2e;
+    --superficie-2: #1a2438;
+    --borde: #263349;
+    --borde-fuerte: #34445f;
+    --texto: #e2e8f0;
+    --texto-sec: #94a3b8;
+    --texto-terciario: #64748b;
+    --texto-inverso: #0b1220;
+
+    --primario-bg: #e2e8f0;
+    --primario-bg-hover: #ffffff;
+    --primario-texto: #0b1220;
+
+    --gris: #94a3b8;     --gris-bg: rgba(148,163,184,.12);  --gris-bd: rgba(148,163,184,.28);
+    --azul: #60a5fa;     --azul-bg: rgba(96,165,250,.14);   --azul-bd: rgba(96,165,250,.30);
+    --verde: #34d399;    --verde-bg: rgba(52,211,153,.14);  --verde-bd: rgba(52,211,153,.30);
+    --amarillo: #fbbf24; --amarillo-bg: rgba(251,191,36,.14); --amarillo-bd: rgba(251,191,36,.30);
+    --rojo: #f87171;     --rojo-bg: rgba(248,113,113,.14);  --rojo-bd: rgba(248,113,113,.30);
+
+    --ia: #a78bfa; --ia-bg: rgba(167,139,250,.14); --ia-bd: rgba(167,139,250,.32);
+}
+
+/* ---- densidad: controla tabla/lista/tarjetas, no los headers ---- */
+:root[data-densidad="compacta"] { --fuente-base: 12px; --fila-alto: 24px; --pad-fila-v: 2px;  --pad-tarjeta: 8px; }
+:root[data-densidad="normal"]   { --fuente-base: 13px; --fila-alto: 30px; --pad-fila-v: 6px;  --pad-tarjeta: 12px; }
+:root[data-densidad="comoda"]   { --fuente-base: 14px; --fila-alto: 36px; --pad-fila-v: 10px; --pad-tarjeta: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}
+
+/* ============================================================
+   Fin de tokens. Lo de abajo es demo/showcase, no se extrae.
+   ============================================================ */
+* { box-sizing: border-box; }
+body {
+    margin: 0; background: var(--bg); color: var(--texto);
+    font-family: var(--fuente); font-size: var(--fuente-base, 13px);
+    padding: var(--esp-6);
+}
+h1 { font-size: var(--fuente-xl); margin: 0 0 var(--esp-1); }
+h2 { font-size: var(--fuente-lg); margin: var(--esp-8) 0 var(--esp-3); border-bottom: 1px solid var(--borde); padding-bottom: var(--esp-2); }
+p.desc { color: var(--texto-sec); margin: 0 0 var(--esp-4); font-size: var(--fuente-md); }
+.controles { display: flex; gap: var(--esp-2); align-items: center; margin-bottom: var(--esp-4); }
+.controles button {
+    font-family: var(--fuente); font-size: var(--fuente-xs); font-weight: var(--peso-medio);
+    padding: var(--esp-2) var(--esp-3); border-radius: var(--radio-sm); border: 1px solid var(--borde-fuerte);
+    background: var(--superficie); color: var(--texto); cursor: pointer;
+}
+.fila-swatches { display: flex; flex-wrap: wrap; gap: var(--esp-3); }
+.swatch { width: 140px; border-radius: var(--radio-md); overflow: hidden; border: 1px solid var(--borde); }
+.swatch .muestra { height: 48px; }
+.swatch .etiqueta { padding: var(--esp-2); font-size: var(--fuente-xs); background: var(--superficie); }
+
+.badge {
+    display: inline-flex; align-items: center; gap: var(--esp-1);
+    padding: 2px var(--esp-2); border-radius: var(--radio-completo);
+    font-size: var(--fuente-xs); font-weight: var(--peso-medio);
+    border: 1px solid; line-height: 1.6;
+}
+.badge.gris     { color: var(--gris);     background: var(--gris-bg);     border-color: var(--gris-bd); }
+.badge.azul     { color: var(--azul);     background: var(--azul-bg);     border-color: var(--azul-bd); }
+.badge.verde    { color: var(--verde);    background: var(--verde-bg);    border-color: var(--verde-bd); }
+.badge.amarillo { color: var(--amarillo); background: var(--amarillo-bg); border-color: var(--amarillo-bd); }
+.badge.rojo     { color: var(--rojo);     background: var(--rojo-bg);     border-color: var(--rojo-bd); }
+.badge.ia       { color: var(--ia);       background: var(--ia-bg);       border-color: var(--ia-bd); }
+
+.anillo { transform: rotate(-90deg); }
+.anillo circle.pista { fill: none; stroke: var(--borde); stroke-width: 4; }
+.anillo circle.progreso { fill: none; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 88; }
+.anillo.a-alto circle.progreso { stroke: var(--verde); }
+.anillo.a-medio circle.progreso { stroke: var(--amarillo); }
+.anillo.a-bajo circle.progreso { stroke: var(--rojo); }
+.anillo.a-nulo circle.progreso { stroke: var(--texto-terciario); }
+.anillo-envoltorio { display: inline-flex; flex-direction: column; align-items: center; gap: var(--esp-1); font-size: var(--fuente-xs); color: var(--texto-sec); }
+
+.tarjetas-demo { display: flex; gap: var(--esp-4); flex-wrap: wrap; }
+.tarjeta {
+    width: 280px; background: var(--superficie); border: 1px solid var(--borde);
+    border-radius: var(--radio-md); padding: var(--pad-tarjeta); box-shadow: var(--sombra-sm);
+    display: flex; flex-direction: column; gap: var(--esp-2);
+}
+.tarjeta .cab { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--esp-2); }
+.tarjeta .numero { font-size: var(--fuente-xs); color: var(--texto-terciario); font-weight: var(--peso-medio); }
+.tarjeta .entidad { font-size: var(--fuente-xs); color: var(--texto-sec); }
+.tarjeta .objeto { font-size: var(--fuente-base); font-weight: var(--peso-medio); line-height: 1.35; }
+.tarjeta.critica { border-color: var(--rojo-bd); box-shadow: 0 0 0 1px var(--rojo-bd); }
+.tarjeta.pronta { border-color: var(--amarillo-bd); }
+
+.franja-ia {
+    display: flex; gap: var(--esp-2); align-items: flex-start;
+    background: var(--ia-bg); border: 1px solid var(--ia-bd); color: var(--ia);
+    border-radius: var(--radio-sm); padding: var(--esp-2);
+    font-size: var(--fuente-xs); line-height: 1.4;
+}
+.franja-ia .texto { color: var(--texto); flex: 1; }
+.franja-ia .confianza { color: var(--ia); font-weight: var(--peso-semi); white-space: nowrap; }
+
+.barra-cumplimiento { display: flex; height: 6px; border-radius: var(--radio-completo); overflow: hidden; background: var(--borde); }
+.barra-cumplimiento .cumple { background: var(--verde); }
+.barra-cumplimiento .parcial { background: var(--amarillo); }
+.barra-cumplimiento .no-cumple { background: var(--rojo); }
+.barra-cumplimiento .pendiente { background: var(--borde-fuerte); }
+
+.plazo { font-size: var(--fuente-xs); font-weight: var(--peso-medio); display: inline-flex; align-items: center; gap: 4px; }
+.plazo.critico { color: var(--rojo); }
+.plazo.pronto { color: var(--amarillo); }
+.plazo.normal { color: var(--texto-sec); }
+
+.semaforo-riesgo { display: inline-flex; gap: 3px; }
+.semaforo-riesgo .punto { width: 6px; height: 6px; border-radius: 50%; background: var(--borde-fuerte); }
+.semaforo-riesgo.baja .punto:nth-child(1) { background: var(--amarillo); }
+.semaforo-riesgo.media .punto:nth-child(1),
+.semaforo-riesgo.media .punto:nth-child(2) { background: var(--amarillo); }
+.semaforo-riesgo.alta .punto { background: var(--rojo); }
+
+.dato { }
+.dato.sinver { position: relative; }
+.dato.sinver::after {
+    content: '⚠'; color: var(--sinver); font-size: var(--fuente-xs); margin-left: 4px;
+}
+
+.kanban-col-demo {
+    width: 260px; background: var(--superficie-2); border: 1px solid var(--borde); border-radius: var(--radio-md);
+    display: flex; flex-direction: column; max-height: 420px;
+}
+.kanban-col-demo .cab-col {
+    position: sticky; top: 0; background: var(--superficie-2); padding: var(--esp-3);
+    border-bottom: 1px solid var(--borde); font-size: var(--fuente-xs);
+}
+.kanban-col-demo .cab-col .titulo { font-weight: var(--peso-semi); color: var(--texto); font-size: var(--fuente-base); }
+.kanban-col-demo .cuerpo-col { overflow-y: auto; padding: var(--esp-2); display: flex; flex-direction: column; gap: var(--esp-2); }
+
+.lista-demo { width: 100%; border-collapse: collapse; background: var(--superficie); border: 1px solid var(--borde); border-radius: var(--radio-md); overflow: hidden; }
+.lista-demo th { text-align: left; font-size: var(--fuente-xs); color: var(--texto-sec); background: var(--superficie-2); padding: var(--esp-2); border-bottom: 1px solid var(--borde); }
+.lista-demo td { padding: var(--pad-fila-v) var(--esp-2); height: var(--fila-alto); border-bottom: 1px solid var(--borde); font-size: var(--fuente-base); }
+.lista-demo td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+.btn { font-family: var(--fuente); font-size: var(--fuente-xs); font-weight: var(--peso-medio); padding: var(--esp-2) var(--esp-3); border-radius: var(--radio-sm); border: 1px solid transparent; cursor: pointer; }
+.btn.primario { background: var(--primario-bg); color: var(--primario-texto); }
+.btn.secundario { background: var(--superficie); color: var(--texto); border-color: var(--borde-fuerte); }
+.btn.peligro { background: var(--rojo-bg); color: var(--rojo); border-color: var(--rojo-bd); }
+
+.avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--gris-bg); color: var(--gris); display: inline-flex; align-items: center; justify-content: center; font-size: var(--fuente-xs); font-weight: var(--peso-semi); }
+</style>
+</head>
+<body>
+
+<h1>LicitaPro — sistema visual v3</h1>
+<p class="desc">Especificación viva: cambia tema/densidad y verifica que todo (menos el anillo/franja IA, que son fijos) responda a los tokens.</p>
+
+<div class="controles">
+    <button onclick="document.documentElement.dataset.tema = document.documentElement.dataset.tema === 'oscuro' ? 'claro' : 'oscuro'">Alternar tema</button>
+    <button onclick="ciclarDensidad()">Alternar densidad</button>
+    <span id="estado-controles" style="font-size:12px;color:var(--texto-sec)"></span>
+</div>
+
+<h2>Color semántico</h2>
+<p class="desc">Mismo vocabulario que <code>Proceso.COLOR_POR_ESTADO</code>: gris / azul / verde / amarillo / rojo. El violeta (<code>--ia</code>) es un canal aparte, nunca se mezcla con estos.</p>
+<div class="fila-swatches">
+    <span class="badge gris">Detectado</span>
+    <span class="badge azul">En evaluación</span>
+    <span class="badge verde">Adjudicado</span>
+    <span class="badge amarillo">Presentado</span>
+    <span class="badge rojo">Descartado</span>
+    <span class="badge ia">Generado por IA</span>
+</div>
+
+<h2>anillo_ajuste — 34px, dasharray 88</h2>
+<div class="fila-swatches">
+    <div class="anillo-envoltorio">
+        <svg class="anillo a-alto" width="34" height="34" viewBox="0 0 34 34">
+            <circle class="pista" cx="17" cy="17" r="14"></circle>
+            <circle class="progreso" cx="17" cy="17" r="14" stroke-dashoffset="22"></circle>
+        </svg>
+        75+ · a-alto
+    </div>
+    <div class="anillo-envoltorio">
+        <svg class="anillo a-medio" width="34" height="34" viewBox="0 0 34 34">
+            <circle class="pista" cx="17" cy="17" r="14"></circle>
+            <circle class="progreso" cx="17" cy="17" r="14" stroke-dashoffset="44"></circle>
+        </svg>
+        45–74 · a-medio
+    </div>
+    <div class="anillo-envoltorio">
+        <svg class="anillo a-bajo" width="34" height="34" viewBox="0 0 34 34">
+            <circle class="pista" cx="17" cy="17" r="14"></circle>
+            <circle class="progreso" cx="17" cy="17" r="14" stroke-dashoffset="70"></circle>
+        </svg>
+        &lt;45 · a-bajo
+    </div>
+    <div class="anillo-envoltorio">
+        <svg class="anillo a-nulo" width="34" height="34" viewBox="0 0 34 34">
+            <circle class="pista" cx="17" cy="17" r="14"></circle>
+            <circle class="progreso" cx="17" cy="17" r="14" stroke-dashoffset="88"></circle>
+        </svg>
+        sin dato · a-nulo
+    </div>
+</div>
+<p class="desc">offset = 88 − (puntaje/100 × 88). Color viene de las mismas variables semánticas (verde/amarillo/rojo/gris), nunca del violeta IA.</p>
+
+<h2>franja_ia</h2>
+<div class="franja-ia" style="max-width:420px">
+    <span class="texto">"Cumple los habilitantes financieros; el plazo de ejecución es ajustado frente al histórico de la empresa."</span>
+    <span class="confianza">82%</span>
+</div>
+
+<h2>tarjeta_proceso</h2>
+<div class="tarjetas-demo">
+    <div class="tarjeta critica">
+        <div class="cab">
+            <div>
+                <div class="numero">DEMO-0015</div>
+                <div class="entidad">Alcaldía de Medellín</div>
+            </div>
+            <div class="anillo-envoltorio">
+                <svg class="anillo a-alto" width="34" height="34" viewBox="0 0 34 34">
+                    <circle class="pista" cx="17" cy="17" r="14"></circle>
+                    <circle class="progreso" cx="17" cy="17" r="14" stroke-dashoffset="18"></circle>
+                </svg>
+            </div>
+        </div>
+        <div class="objeto">Suministro de equipos de cómputo y conectividad para las sedes administrativas</div>
+        <div class="barra-cumplimiento">
+            <div class="cumple" style="width:45%"></div>
+            <div class="parcial" style="width:20%"></div>
+            <div class="no-cumple" style="width:10%"></div>
+            <div class="pendiente" style="width:25%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="plazo critico">● cierra en 2 días</span>
+            <span class="avatar">MG</span>
+        </div>
+    </div>
+
+    <div class="tarjeta pronta">
+        <div class="cab">
+            <div>
+                <div class="numero">DEMO-0034</div>
+                <div class="entidad">Gobernación de Cundinamarca</div>
+            </div>
+        </div>
+        <div class="objeto">Interventoría integral al programa de alimentación escolar</div>
+        <div class="franja-ia" style="padding:6px 8px">
+            <span class="texto">Riesgo bajo, experiencia acreditable con el histórico actual.</span>
+            <span class="confianza">91%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="plazo pronto">● cierra en 5 días</span>
+            <span class="semaforo-riesgo media"><span class="punto"></span><span class="punto"></span><span class="punto"></span></span>
+        </div>
+    </div>
+</div>
+
+<h2>plazo</h2>
+<div class="fila-swatches">
+    <span class="plazo critico">● 2 días — crítico</span>
+    <span class="plazo pronto">● 6 días — pronto</span>
+    <span class="plazo normal">● 21 días — normal</span>
+</div>
+
+<h2>dato_sinverificar</h2>
+<p class="desc">
+    Presupuesto: <span class="dato sinver">$ 2.634.500.000</span> — sin
+    <code>fechas_verificadas_por</code>.
+    Cierre: <span class="dato">17/06/2026</span> — verificado, sin marcador.
+</p>
+
+<h2>Kanban — columna</h2>
+<div class="kanban-col-demo">
+    <div class="cab-col">
+        <div class="titulo">En evaluación</div>
+        <div>5 procesos · $ 8.240M</div>
+    </div>
+    <div class="cuerpo-col">
+        <div class="tarjeta" style="width:auto">
+            <div class="objeto">Mantenimiento de redes eléctricas y alumbrado público</div>
+            <span class="plazo normal">● 14 días</span>
+        </div>
+        <div class="tarjeta critica" style="width:auto">
+            <div class="objeto">Dotación de equipos biomédicos para los centros de salud</div>
+            <span class="plazo critico">● 1 día</span>
+        </div>
+    </div>
+</div>
+
+<h2>Lista — densidad</h2>
+<table class="lista-demo">
+    <thead><tr><th>Número</th><th>Entidad</th><th>Objeto</th><th>Ajuste</th><th>Presupuesto</th></tr></thead>
+    <tbody>
+        <tr><td>DEMO-0001</td><td>Alcaldía de Pasto</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Dotación de menaje y elementos de bioseguridad para hogares comunitarios</td><td>78</td><td class="num">$ 1.240.000.000</td></tr>
+        <tr><td>DEMO-0002</td><td>ICBF</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Interventoría al proyecto de mejoramiento de vivienda rural</td><td>34</td><td class="num">$ 340.000.000</td></tr>
+        <tr><td>DEMO-0003</td><td>INVÍAS</td><td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Mantenimiento preventivo y correctivo de la infraestructura vial urbana</td><td>—</td><td class="num">$ 2.980.000.000</td></tr>
+    </tbody>
+</table>
+<p class="desc">Fila = <code>var(--fila-alto)</code> (30px en densidad normal), texto = <code>var(--fuente-base)</code> (13px). Objetivo: 25–30 filas visibles en 1080px.</p>
+
+<h2>Botones</h2>
+<div class="fila-swatches">
+    <button class="btn primario">Guardar</button>
+    <button class="btn secundario">Cancelar</button>
+    <button class="btn peligro">Descartar</button>
+</div>
+
+<script>
+const NIVELES = ["compacta", "normal", "comoda"];
+function ciclarDensidad() {
+    const actual = document.documentElement.dataset.densidad;
+    const siguiente = NIVELES[(NIVELES.indexOf(actual) + 1) % NIVELES.length];
+    document.documentElement.dataset.densidad = siguiente;
+    document.getElementById("estado-controles").textContent = `densidad: ${siguiente}`;
+}
+document.getElementById("estado-controles").textContent = "densidad: normal";
+</script>
+
+</body>
+</html>

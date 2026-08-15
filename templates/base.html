@@ -1,58 +1,68 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="es" class="h-full">
+<html lang="es" class="h-full"
+      data-tema="{{ request.user.tema|default:'claro' }}"
+      data-densidad="{{ request.user.densidad|default:'normal' }}"
+      data-vista="{{ request.user.vista_preferida|default:'kanban' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block titulo %}LicitaPro{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script defer src="https://unpkg.com/alpinejs@3.14.3/dist/cdn.min.js"></script>
+    <script src="{% static 'js/preferencias.js' %}"></script>
     {% block extra_head %}{% endblock %}
 </head>
-<body class="h-full bg-slate-100 text-slate-800 text-sm antialiased"
-      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-<div class="flex h-full">
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+{% include "componentes/iconos.html" %}
+<div class="app">
 
-    <aside class="w-56 shrink-0 flex flex-col bg-slate-900 text-slate-300 border-r border-slate-800">
-        <div class="h-12 flex items-center px-4 border-b border-slate-800 text-white text-sm font-semibold tracking-tight">
-            LicitaPro
-        </div>
-        <nav class="flex-1 overflow-y-auto py-2 text-[13px] leading-tight">
-            <div class="px-3 pt-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-slate-500">
-                Comercial
-            </div>
-            <a href="{% url 'core:entidades' %}"
-               class="block px-3 py-1.5 border-l-2 border-transparent hover:bg-slate-800 hover:text-white">
-                Entidades
-            </a>
-            <a href="{% url 'procesos:lista' %}"
-               class="block px-3 py-1.5 border-l-2 border-transparent hover:bg-slate-800 hover:text-white">
-                Procesos
-            </a>
-            <span class="block px-3 py-1.5 border-l-2 border-transparent text-slate-600 cursor-default">
-                Documentos
-            </span>
+    <aside class="barra-lateral">
+        <div class="barra-lateral__marca">LicitaPro</div>
+        <nav class="barra-lateral__nav">
+            <div class="barra-lateral__grupo">Comercial</div>
+            <a href="{% url 'core:entidades' %}" class="barra-lateral__enlace">Entidades</a>
+            <a href="{% url 'procesos:lista' %}" class="barra-lateral__enlace">Procesos</a>
+            <span class="barra-lateral__enlace inerte">Documentos</span>
 
-            <div class="px-3 pt-3 pb-1 text-[11px] font-medium uppercase tracking-wider text-slate-500">
-                Empresa
-            </div>
-            <span class="block px-3 py-1.5 border-l-2 border-transparent text-slate-600 cursor-default">
-                Perfil
-            </span>
+            <div class="barra-lateral__grupo">Empresa</div>
+            <span class="barra-lateral__enlace inerte">Perfil</span>
         </nav>
     </aside>
 
-    <div class="flex-1 flex flex-col min-w-0">
-        <header class="h-12 shrink-0 flex items-center justify-between px-4 border-b border-slate-200 bg-white">
-            <nav class="flex items-center gap-1.5 text-xs text-slate-500">
+    <div class="principal">
+        <header class="encabezado">
+            <nav class="migas">
                 {% block migas %}
-                    <span class="text-slate-700 font-medium">Inicio</span>
+                    <span class="actual">Inicio</span>
                 {% endblock %}
             </nav>
-            <div class="text-xs text-slate-400">{{ request.user }}</div>
+            <div class="flex items-centro">
+                <div class="preferencias">
+                    <button type="button" class="preferencias__btn" title="Alternar tema" onclick="licitapro.alternarTema()">
+                        <svg class="icono"><use href="#i-sol"></use></svg>
+                    </button>
+                    <button type="button" class="preferencias__btn" title="Alternar densidad" onclick="licitapro.ciclarDensidad()">
+                        <svg class="icono"><use href="#i-densidad"></use></svg>
+                    </button>
+                </div>
+                <span class="preferencias__usuario">{{ request.user }}</span>
+            </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto">
+        <main class="contenido">
+            {% if messages %}
+                <div class="mensajes">
+                    {% for message in messages %}
+                        <div class="mensaje {{ message.tags|default:'info' }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
             {% block contenido %}{% endblock %}
         </main>
     </div>

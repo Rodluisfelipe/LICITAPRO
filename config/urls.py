@@ -7,6 +7,7 @@ urlpatterns = [
     path("accounts/", include("allauth.urls")),
     path("", include("core.urls")),
     path("", include("procesos.urls")),
+    path("social/", include("social.urls")),
 ]
 
 if settings.DEBUG:

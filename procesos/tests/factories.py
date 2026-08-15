@@ -1,7 +1,7 @@
 import factory
 
 from core.tests.factories import EntidadFactory
-from procesos.models import Proceso, Requisito, VersionDocumental
+from procesos.models import Proceso, Requisito, Riesgo, VersionDocumental
 
 
 class ProcesoFactory(factory.django.DjangoModelFactory):
@@ -32,3 +32,13 @@ class RequisitoFactory(factory.django.DjangoModelFactory):
     tipo = Requisito.Tipo.JURIDICO
     numeral = factory.Sequence(lambda n: f"3.{n}")
     descripcion = factory.Sequence(lambda n: f"Requisito de prueba {n}")
+
+
+class RiesgoFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Riesgo
+
+    proceso = factory.SubFactory(ProcesoFactory)
+    tipo = Riesgo.Tipo.PLAZO_IRREAL
+    severidad = Riesgo.Severidad.MEDIA
+    descripcion = factory.Sequence(lambda n: f"Riesgo de prueba {n}")

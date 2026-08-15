@@ -1,0 +1,114 @@
+/* ============================================================
+   TOKENS — extraído literal de referencia_ui_v3.html.
+   Ningún color/espaciado/radio/sombra se escribe fuera de aquí.
+   ============================================================ */
+:root {
+    /* --- tipografía --- */
+    --fuente: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --fuente-mono: ui-monospace, 'SF Mono', Consolas, monospace;
+    --fuente-xs: 11px;
+    --fuente-md: 15px;
+    --fuente-lg: 18px;
+    --fuente-xl: 22px;
+    --peso-normal: 400;
+    --peso-medio: 500;
+    --peso-semi: 600;
+    --peso-fuerte: 700;
+
+    /* --- espaciado (grid de 4px) --- */
+    --esp-1: 4px;  --esp-2: 8px;  --esp-3: 12px; --esp-4: 16px;
+    --esp-5: 20px; --esp-6: 24px; --esp-8: 32px; --esp-10: 40px;
+
+    /* --- radio --- */
+    --radio-sm: 4px;
+    --radio-md: 8px;
+    --radio-lg: 12px;
+    --radio-completo: 999px;
+
+    /* --- sombra (modo claro) --- */
+    --sombra-sm: 0 1px 2px rgba(15,23,42,.06);
+    --sombra-md: 0 4px 12px rgba(15,23,42,.10);
+    --sombra-lg: 0 12px 32px rgba(15,23,42,.18);
+
+    /* --- movimiento --- */
+    --dur-rapida: 120ms;
+    --dur-normal: 200ms;
+    --facil: cubic-bezier(.4,0,.2,1);
+
+    /* --- z-index --- */
+    --z-pegajoso: 10;
+    --z-flotante: 20;
+    --z-modal: 50;
+
+    /* --- superficie / texto (modo claro) --- */
+    --bg: #f1f5f9;
+    --superficie: #ffffff;
+    --superficie-2: #f8fafc;
+    --borde: #e2e8f0;
+    --borde-fuerte: #cbd5e1;
+    --texto: #1e293b;
+    --texto-sec: #64748b;
+    --texto-terciario: #94a3b8;
+    --texto-inverso: #ffffff;
+
+    /* --- acción primaria --- */
+    --primario-bg: #1e293b;
+    --primario-bg-hover: #334155;
+    --primario-texto: #ffffff;
+
+    /* --- semántico: estado / cumplimiento / severidad ---
+       Estos 5 nombres son el mismo vocabulario que ya usa
+       Proceso.COLOR_POR_ESTADO — no se inventan nombres nuevos. */
+    --gris: #475569;     --gris-bg: #f1f5f9;     --gris-bd: #e2e8f0;
+    --azul: #2563eb;     --azul-bg: #dbeafe;     --azul-bd: #bfdbfe;
+    --verde: #059669;    --verde-bg: #d1fae5;    --verde-bd: #a7f3d0;
+    --amarillo: #d97706; --amarillo-bg: #fef3c7; --amarillo-bd: #fde68a;
+    --rojo: #dc2626;     --rojo-bg: #fee2e2;     --rojo-bd: #fecaca;
+
+    /* --- IA — EXCLUSIVO para contenido generado por el modelo.
+       Ver CLAUDE.md § Diseño: si algo es violeta, lo escribió la
+       máquina. Nunca botones, nunca estados, nunca decoración. --- */
+    --ia: #7c3aed; --ia-bg: #f3e8ff; --ia-bd: #ddd6fe;
+
+    /* --- dato sin verificar (invariante 3) --- */
+    --sinver: var(--amarillo);
+    --sinver-bg: var(--amarillo-bg);
+}
+
+/* ---- modo oscuro: mismo vocabulario, valores distintos ---- */
+:root[data-tema="oscuro"] {
+    --sombra-sm: 0 1px 2px rgba(0,0,0,.4);
+    --sombra-md: 0 4px 16px rgba(0,0,0,.5);
+    --sombra-lg: 0 16px 40px rgba(0,0,0,.6);
+
+    --bg: #0b1220;
+    --superficie: #131c2e;
+    --superficie-2: #1a2438;
+    --borde: #263349;
+    --borde-fuerte: #34445f;
+    --texto: #e2e8f0;
+    --texto-sec: #94a3b8;
+    --texto-terciario: #64748b;
+    --texto-inverso: #0b1220;
+
+    --primario-bg: #e2e8f0;
+    --primario-bg-hover: #ffffff;
+    --primario-texto: #0b1220;
+
+    --gris: #94a3b8;     --gris-bg: rgba(148,163,184,.12);  --gris-bd: rgba(148,163,184,.28);
+    --azul: #60a5fa;     --azul-bg: rgba(96,165,250,.14);   --azul-bd: rgba(96,165,250,.30);
+    --verde: #34d399;    --verde-bg: rgba(52,211,153,.14);  --verde-bd: rgba(52,211,153,.30);
+    --amarillo: #fbbf24; --amarillo-bg: rgba(251,191,36,.14); --amarillo-bd: rgba(251,191,36,.30);
+    --rojo: #f87171;     --rojo-bg: rgba(248,113,113,.14);  --rojo-bd: rgba(248,113,113,.30);
+
+    --ia: #a78bfa; --ia-bg: rgba(167,139,250,.14); --ia-bd: rgba(167,139,250,.32);
+}
+
+/* ---- densidad: controla tabla/lista/tarjetas, no los headers ---- */
+:root[data-densidad="compacta"] { --fuente-base: 12px; --fila-alto: 24px; --pad-fila-v: 2px;  --pad-tarjeta: 8px; }
+:root[data-densidad="normal"]   { --fuente-base: 13px; --fila-alto: 30px; --pad-fila-v: 6px;  --pad-tarjeta: 12px; }
+:root[data-densidad="comoda"]   { --fuente-base: 14px; --fila-alto: 36px; --pad-fila-v: 10px; --pad-tarjeta: 16px; }
+
+@media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+}

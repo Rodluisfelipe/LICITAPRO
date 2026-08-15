@@ -1,0 +1,39 @@
+{% load partials %}
+{% partialdef tab_requisitos inline %}
+<table class="tabla">
+    <thead>
+        <tr>
+            <th>Tipo</th>
+            <th>Numeral</th>
+            <th>Descripción</th>
+            <th>Cumplimiento</th>
+            <th>Crítico</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for requisito in requisitos %}
+            <tr>
+                <td style="white-space:nowrap">{{ requisito.get_tipo_display }}</td>
+                <td style="white-space:nowrap">{{ requisito.numeral|default:"—" }}</td>
+                <td class="recorte" style="max-width:420px" title="{{ requisito.descripcion }}">
+                    {{ requisito.descripcion|truncatechars:100 }}
+                </td>
+                <td>
+                    {% if requisito.cumplimiento == "cumple" %}
+                        {% include "componentes/badge_estado.html" with color="verde" texto=requisito.get_cumplimiento_display %}
+                    {% elif requisito.cumplimiento == "no_cumple" %}
+                        {% include "componentes/badge_estado.html" with color="rojo" texto=requisito.get_cumplimiento_display %}
+                    {% elif requisito.cumplimiento == "por_verificar" %}
+                        {% include "componentes/badge_estado.html" with color="gris" texto=requisito.get_cumplimiento_display %}
+                    {% else %}
+                        {% include "componentes/badge_estado.html" with color="amarillo" texto=requisito.get_cumplimiento_display %}
+                    {% endif %}
+                </td>
+                <td class="texto-derecha">{% if requisito.es_critico %}⚠{% endif %}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" class="vacio">Sin requisitos extraídos todavía.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endpartialdef %}

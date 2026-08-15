@@ -1,56 +1,56 @@
 {% extends "base.html" %}
-{% load widget_tweaks %}
 
 {% block titulo %}Procesos — LicitaPro{% endblock %}
 
 {% block migas %}
-    <span class="text-slate-700 font-medium">Procesos</span>
+    <span class="actual">Procesos</span>
 {% endblock %}
 
 {% block contenido %}
-<div class="p-4">
-    {% with clase="rounded border border-slate-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-slate-400 focus:border-slate-400" %}
+<div class="contenedor">
+    {% include "componentes/panel_control.html" %}
+
     <form id="filtros-procesos"
           hx-get="{% url 'procesos:lista' %}"
           hx-target="#tabla-procesos-wrapper"
           hx-swap="outerHTML"
           hx-push-url="true"
           hx-trigger="change, keyup changed delay:400ms from:input[name=q]"
-          class="flex flex-wrap items-end gap-3 mb-4">
+          class="flex flex-envolver items-centro gap-3"
+          style="margin-bottom: var(--esp-4)">
+        <input type="hidden" name="vista" value="lista">
         <input type="hidden" name="orden" value="{{ orden }}">
 
-        <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Buscar</label>
+        <div class="campo" style="margin-bottom:0">
+            <label class="campo__etiqueta">Buscar</label>
             <input type="text" name="q" value="{{ request.GET.q|default:'' }}"
-                   placeholder="Número u objeto..." autocomplete="off"
-                   class="{{ clase }} w-56">
+                   placeholder="Número u objeto..." autocomplete="off" style="width:220px">
         </div>
-        <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Estado</label>
-            {% render_field filtro.form.estado class=clase %}
+        <div class="campo" style="margin-bottom:0">
+            <label class="campo__etiqueta">Estado</label>
+            {{ filtro.form.estado }}
         </div>
-        <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Entidad</label>
-            {% render_field filtro.form.entidad class=clase %}
+        <div class="campo" style="margin-bottom:0">
+            <label class="campo__etiqueta">Entidad</label>
+            {{ filtro.form.entidad }}
         </div>
-        <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Modalidad</label>
-            {% render_field filtro.form.modalidad class=clase %}
+        <div class="campo" style="margin-bottom:0">
+            <label class="campo__etiqueta">Modalidad</label>
+            {{ filtro.form.modalidad }}
         </div>
-        <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Responsable</label>
-            {% render_field filtro.form.responsable class=clase %}
+        <div class="campo" style="margin-bottom:0">
+            <label class="campo__etiqueta">Responsable</label>
+            {{ filtro.form.responsable }}
         </div>
-        <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Cierre desde</label>
-            {% render_field filtro.form.fecha_cierre_desde class=clase %}
+        <div class="campo" style="margin-bottom:0">
+            <label class="campo__etiqueta">Cierre desde</label>
+            {{ filtro.form.fecha_cierre_desde }}
         </div>
-        <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Cierre hasta</label>
-            {% render_field filtro.form.fecha_cierre_hasta class=clase %}
+        <div class="campo" style="margin-bottom:0">
+            <label class="campo__etiqueta">Cierre hasta</label>
+            {{ filtro.form.fecha_cierre_hasta }}
         </div>
     </form>
-    {% endwith %}
 
     {% include "procesos/partials/tabla_procesos.html" %}
 </div>

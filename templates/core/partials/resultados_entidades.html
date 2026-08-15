@@ -1,16 +1,15 @@
 {% load partials %}
 {% partialdef resultados_entidades inline %}
-<div id="resultados-entidades"
-     class="mt-2 divide-y divide-slate-200 border border-slate-200 rounded bg-white">
+<div id="resultados-entidades" class="panel" style="margin-top: var(--esp-2); overflow: hidden">
     {% for entidad in entidades %}
-        <div class="px-3 py-2 hover:bg-slate-50">
-            <div class="font-medium text-slate-800">{{ entidad.nombre }}</div>
-            <div class="text-xs text-slate-500">
+        <div style="padding: var(--esp-2) var(--esp-3); border-bottom: 1px solid var(--borde)">
+            <div style="font-weight: var(--peso-medio)">{{ entidad.nombre }}</div>
+            <div class="texto-xs texto-sec">
                 {{ entidad.nit|default:"Sin NIT" }}{% if entidad.municipio %} · {{ entidad.municipio }}{% endif %}{% if entidad.departamento %}, {{ entidad.departamento }}{% endif %}
             </div>
         </div>
     {% empty %}
-        <div class="px-3 py-4 text-center text-slate-400">
+        <div class="vacio">
             {% if request.GET.q %}
                 Sin resultados para "{{ request.GET.q }}".
             {% else %}
