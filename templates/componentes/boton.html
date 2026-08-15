@@ -1,0 +1,19 @@
+{% with variante=variante|default:"primario" %}
+{% if href %}
+    <a href="{{ href }}"
+       class="inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium border transition-colors
+           {% if variante == 'primario' %}bg-slate-800 text-white border-slate-800 hover:bg-slate-700
+           {% elif variante == 'secundario' %}bg-white text-slate-700 border-slate-300 hover:bg-slate-50
+           {% elif variante == 'peligro' %}bg-red-600 text-white border-red-600 hover:bg-red-500{% endif %}">
+        {{ texto }}
+    </a>
+{% else %}
+    <button type="{{ tipo|default:'button' }}"
+            class="inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-sm font-medium border transition-colors
+                {% if variante == 'primario' %}bg-slate-800 text-white border-slate-800 hover:bg-slate-700
+                {% elif variante == 'secundario' %}bg-white text-slate-700 border-slate-300 hover:bg-slate-50
+                {% elif variante == 'peligro' %}bg-red-600 text-white border-red-600 hover:bg-red-500{% endif %}">
+        {{ texto }}
+    </button>
+{% endif %}
+{% endwith %}

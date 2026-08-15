@@ -1,0 +1,13 @@
+{% load ui %}
+<th class="px-3 py-2 text-left text-xs font-medium text-slate-500 uppercase tracking-wide whitespace-nowrap">
+    <a href="{{ request.path }}?orden={% siguiente_orden orden campo %}"
+       hx-get="{{ request.path }}?orden={% siguiente_orden orden campo %}"
+       hx-include="#{{ formulario|default:'filtros' }}"
+       hx-target="#{{ objetivo|default:'resultados' }}"
+       hx-swap="outerHTML"
+       hx-push-url="true"
+       class="inline-flex items-center gap-1 hover:text-slate-800">
+        {{ etiqueta }}
+        <span class="text-slate-400 w-2 inline-block">{% flecha_orden orden campo %}</span>
+    </a>
+</th>

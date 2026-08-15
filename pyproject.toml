@@ -1,0 +1,84 @@
+[project]
+name = "licitaciones"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+dependencies = [
+    # núcleo
+    "django>=5.2,<6.0",
+    "djangorestframework>=3.15",
+    "psycopg[binary]>=3.2",
+    "django-environ>=0.11",
+    "gunicorn>=23.0",
+
+    # dominio
+    "django-fsm-2>=4.0",
+    "django-auditlog>=3.0",
+    "django-guardian>=2.4",
+    "django-filter>=24.0",
+    "pgvector>=0.3",
+
+    # auth con Google Workspace
+    "django-allauth[socialaccount]>=65.0",
+
+    # frontend
+    "django-htmx>=1.19",
+    "django-template-partials>=24.4",
+    "django-widget-tweaks>=1.5",
+
+    # async
+    "celery[redis]>=5.4",
+    "django-celery-beat>=2.7",
+    "django-celery-results>=2.5",
+
+    # archivos y correo
+    "django-storages[s3]>=1.14",
+    "boto3>=1.35",
+    "resend>=2.0",
+
+    # observabilidad y estáticos en prod
+    "sentry-sdk>=2.17",
+    "whitenoise>=6.7",
+
+    # ia y documentos
+    "anthropic>=0.40",
+    "pydantic>=2.9",
+    "pymupdf4llm>=0.0.17",
+    "docling>=2.0",
+    "tenacity>=9.0",
+    "langfuse>=2.50",
+
+    # importador (ya tienes el extractor; estas son las libs base)
+    "openpyxl>=3.1",
+    "pandas>=2.2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "pytest-cov>=5.0",
+    "factory-boy>=3.3",
+    "ruff>=0.7",
+    "django-debug-toolbar>=4.4",
+    "django-extensions>=3.2",
+    "ipython>=8.28",
+    "pre-commit>=4.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.dev"
+python_files = ["test_*.py", "*_test.py"]
+addopts = "--reuse-db -q"
+
+[tool.coverage.run]
+omit = ["*/migrations/*", "*/tests/*", "config/*"]

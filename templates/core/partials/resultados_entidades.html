@@ -1,0 +1,22 @@
+{% load partials %}
+{% partialdef resultados_entidades inline %}
+<div id="resultados-entidades"
+     class="mt-2 divide-y divide-slate-200 border border-slate-200 rounded bg-white">
+    {% for entidad in entidades %}
+        <div class="px-3 py-2 hover:bg-slate-50">
+            <div class="font-medium text-slate-800">{{ entidad.nombre }}</div>
+            <div class="text-xs text-slate-500">
+                {{ entidad.nit|default:"Sin NIT" }}{% if entidad.municipio %} · {{ entidad.municipio }}{% endif %}{% if entidad.departamento %}, {{ entidad.departamento }}{% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <div class="px-3 py-4 text-center text-slate-400">
+            {% if request.GET.q %}
+                Sin resultados para "{{ request.GET.q }}".
+            {% else %}
+                Escribe para buscar una entidad.
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
+{% endpartialdef %}

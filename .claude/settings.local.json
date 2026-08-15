@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv --version)",
+      "PowerShell(uv --version)",
+      "PowerShell(docker --version)",
+      "PowerShell(docker compose version)",
+      "PowerShell(Get-Command make -ErrorAction SilentlyContinue)",
+      "PowerShell(docker compose up -d)",
+      "Bash(mkdir -p \"config/settings\")",
+      "Bash(rm \"config/settings.py\")",
+      "Bash(uv run *)",
+      "Bash(xargs -I{} echo {})"
+    ]
+  }
+}
