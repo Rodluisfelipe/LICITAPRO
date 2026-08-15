@@ -138,3 +138,78 @@
   ni service (`responsable`, `fecha_adjudicacion`, y `cumplimiento` /
   `verificado_por` / `verificado_en` en `Requisito`, que el propio admin
   ya trata como editables — ver la nota de arriba sobre `readonly_fields`).
+
+## 2026-08-15 — Sistema visual v3: tokens propios, kanban como vista principal
+
+- Se retiró Tailwind por CDN (`cdn.tailwindcss.com`) de todo el proyecto.
+  Motivo real: ese dominio específico está bloqueado a nivel de DNS del
+  ISP del usuario (`Query refused` al resolverlo contra su resolver, pero
+  resuelve bien contra 1.1.1.1/8.8.8.8) — htmx y Alpine, servidos desde
+  `unpkg.com`, nunca estuvieron rotos. En vez de depender de un CDN
+  externo (frágil incluso para quien no tenga ese bloqueo puntual), se
+  construyó un sistema de tokens propio y CSS a mano sobre esos tokens.
+- No existía `referencia_ui_v3.html` como insumo — se pidió construirlo
+  desde cero "en base al proyecto". Se ancló en el vocabulario de color ya
+  establecido (`gris/azul/verde/amarillo/rojo`, el mismo que
+  `Proceso.COLOR_POR_ESTADO`) y se añadió un canal `--ia` (violeta)
+  exclusivo para contenido generado por el modelo — nunca botones, nunca
+  estados. `static/css/tokens.css` es el `:root` extraído literal de ese
+  archivo; `static/css/app.css` es el CSS de componentes construido
+  encima. Ambos archivos son ahora la única fuente de valores de
+  color/espaciado/radio/sombra/tipografía — nada literal en las plantillas.
+- `Usuario` gana `tema`/`densidad`/`vista_preferida`. Se renderizan como
+  atributos `data-*` en `<html>` desde el servidor (nunca vía JS al
+  cargar) para que no haya parpadeo; los botones de la navbar cambian el
+  atributo en el DOM al instante y persisten con `htmx.ajax` en segundo
+  plano contra `core:actualizar_preferencias`, que no hace nada si
+  `request.user` no está autenticado (no hay `login_required` todavía en
+  el proyecto — gap preexistente, no introducido aquí).
+- El **kanban es ahora la vista por defecto** de `/procesos/` (antes era
+  la lista). `procesos.views.lista_procesos` es un dispatcher: decide
+  kanban vs. lista por `?vista=` o por `Usuario.vista_preferida`, nunca
+  hay dos URLs distintas. Columnas del tablero = solo el camino activo
+  (`detectado…presentado`); `descartado/adjudicado/no_adjudicado` quedan
+  fuera por defecto, accesibles con `?todos=1`.
+- Faltaba una transición de FSM: `Proceso.Estado.DESIERTO` existía en el
+  choices pero ningún `@transition` lo alcanzaba. Se agregó
+  `declarar_desierto` (`PRESENTADO -> DESIERTO`), espejo de
+  `adjudicar`/`perder`. Sin esto no había forma de sembrar/mover un
+  proceso a ese estado sin asignación directa, que es exactamente lo que
+  las transiciones vía service existen para evitar.
+- Se implementó `procesos.models.Riesgo` (no existía; solo estaba en
+  `_referencia_models.py`) porque el queryset anotado del tablero
+  (`procesos.services.procesos_con_metricas`) necesita `proceso.riesgos`
+  para el semáforo. Misma taxonomía cerrada que la referencia (invariante
+  5). Sin UI de captura todavía — la pestaña "Riesgos" del detalle
+  muestra lo que haya, vacío por ahora.
+- `procesos_con_metricas()` resuelve tablero y lista con **una sola
+  consulta anotada** (confirmado: 1 query para 40 procesos con
+  `CaptureQueriesContext`, muy por debajo del presupuesto de 5). Un
+  detalle importante que se corrigió del enunciado original: anotar
+  `riesgo_max=Max("riesgos__severidad")` sobre un `CharField` ordena
+  *alfabéticamente* ("media" > "alta" > "baja"), así que un proceso con
+  un riesgo alto y uno medio habría reportado "media" como el peor. Se
+  anota `riesgo_rango` con `Case/When` (alta=3, media=2, baja=1) y se
+  traduce de vuelta con el filtro `rango_a_severidad` — mismo costo, sin
+  el bug. Cubierto por test (`test_procesos_con_metricas_riesgo_rango_no_se_confunde_con_orden_alfabetico`).
+- Bug real encontrado en QA visual (Playwright + captura): con
+  `LANGUAGE_CODE = "es-co"`, Django renderiza floats con coma decimal
+  (`42,86`), inválido en `width:…%` de CSS y en `stroke-dashoffset` de
+  SVG. Los filtros `porcentaje`/`offset_anillo`/`a_porcentaje` en
+  `core/templatetags/ui.py` devuelven strings formateados a mano
+  (`f"{valor:.2f}"`, punto siempre) en vez de floats crudos — Django ya
+  no tiene oportunidad de localizarlos.
+- El drag&drop del kanban (SortableJS, única librería nueva agregada,
+  autorizada explícitamente) nunca decide una transición del lado del
+  cliente: cada tarjeta lleva un `data-transiciones` con el mapa
+  `{estado_destino: nombre_transicion}` que ya calculó
+  `procesos.services.transiciones_disponibles` en el servidor. Si el
+  destino no está en ese mapa, la tarjeta vuelve a su columna sin
+  siquiera pegarle al backend; si sí está, igual se confirma contra
+  `procesos:mover_kanban` (puede haber cambiado de estado entre el
+  render y el drop) y ese endpoint es la única fuente de verdad — nunca
+  se inventa una transición en JS.
+- Quedó pendiente (explícitamente, es la segunda mitad del pedido):
+  estado "analizando" con polling HTMX dirigido, rehacer la vista lista
+  con densidad de referencia + columna Ajuste, y la sección "Diseño" en
+  CLAUDE.md con la regla del violeta.
