@@ -1,0 +1,37 @@
+{% load partials %}
+{% partialdef fila_usuario inline %}
+<tr id="fila-usuario-{{ usuario.pk }}">
+    <td>{{ usuario.get_full_name|default:usuario.username }}</td>
+    <td class="texto-sec">{{ usuario.email }}</td>
+    <td>
+        <form hx-post="{% url 'configuracion:usuario_cambiar_perfil' usuario.pk %}"
+              hx-target="#fila-usuario-{{ usuario.pk }}" hx-swap="outerHTML">
+            <select name="grupo_id" onchange="this.form.requestSubmit()">
+                <option value="">— sin perfil —</option>
+                {% for grupo in grupos %}
+                    <option value="{{ grupo.pk }}" {% if grupo in usuario.groups.all %}selected{% endif %}>
+                        {{ grupo.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </td>
+    <td>{{ usuario.cargo|default:"—" }}</td>
+    <td>
+        {% if usuario.is_active %}
+            {% include "componentes/badge_estado.html" with color="verde" texto="Activo" %}
+        {% else %}
+            {% include "componentes/badge_estado.html" with color="gris" texto="Inactivo" %}
+        {% endif %}
+    </td>
+    <td class="texto-xs texto-sec">{{ usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</td>
+    <td class="texto-derecha">
+        <form method="post" action="{% url 'configuracion:usuario_alternar_activo' usuario.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn fantasma">
+                {% if usuario.is_active %}Desactivar{% else %}Activar{% endif %}
+            </button>
+        </form>
+    </td>
+</tr>
+{% endpartialdef %}

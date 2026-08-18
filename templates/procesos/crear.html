@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}Nuevo proceso — LicitaPro{% endblock %}
+
+{% block migas %}
+    <a href="{% url 'procesos:lista' %}">Procesos</a>
+    <span class="texto-terciario">/</span>
+    <span class="actual">Nuevo</span>
+{% endblock %}
+
+{% block extra_head %}
+    <script src="{% static 'js/crear_proceso.js' %}"></script>
+{% endblock %}
+
+{% block contenido %}
+{% url 'procesos:lista' as url_lista %}
+<div class="contenedor-ancho" style="max-width: 760px">
+    <div class="panel panel__cuerpo">
+        <form method="post" class="rejilla-2col" x-data="{crearEntidad: false}">
+            {% csrf_token %}
+
+            <div class="col-completa">
+                {% include "componentes/campo_form.html" with campo=form.objeto %}
+            </div>
+
+            <div class="col-completa campo">
+                <label class="campo__etiqueta">Entidad <span class="campo__requerido">*</span></label>
+                <div style="position:relative; max-width:420px">
+                    <input type="text" id="id-entidad-busqueda" placeholder="Buscar entidad por nombre o NIT..."
+                           autocomplete="off" oninput="licitapro.buscarEntidad(this)">
+                    <input type="hidden" name="entidad" id="id-entidad-valor">
+                    <div id="entidad-opciones" style="position:absolute; z-index:var(--z-flotante); width:100%"></div>
+                </div>
+                {% for error in form.entidad.errors %}
+                    <p class="campo__error">{{ error }}</p>
+                {% endfor %}
+
+                {% if puede_crear_entidad %}
+                    <button type="button" class="btn fantasma" @click="crearEntidad = !crearEntidad"
+                            style="padding-left:0; margin-top:var(--esp-2)">
+                        ¿No aparece? Crear una entidad nueva
+                    </button>
+                    <div x-show="crearEntidad" x-cloak class="rejilla-2col panel"
+                         style="padding:var(--esp-3); background:var(--superficie-2); margin-top:var(--esp-2)">
+                        {% include "componentes/campo_form.html" with campo=form_entidad.nombre %}
+                        {% include "componentes/campo_form.html" with campo=form_entidad.nit %}
+                        {% include "componentes/campo_form.html" with campo=form_entidad.orden %}
+                        {% include "componentes/campo_form.html" with campo=form_entidad.departamento %}
+                        {% include "componentes/campo_form.html" with campo=form_entidad.municipio %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {% include "componentes/campo_form.html" with campo=form.numero_proceso %}
+            {% include "componentes/campo_form.html" with campo=form.modalidad %}
+            {% include "componentes/campo_form.html" with campo=form.presupuesto_oficial %}
+            {% include "componentes/campo_form.html" with campo=form.url_secop %}
+            {% include "componentes/campo_form.html" with campo=form.moneda %}
+            {% include "componentes/campo_form.html" with campo=form.responsable %}
+            {% include "componentes/campo_form.html" with campo=form.plazo_ejecucion_dias %}
+            {% include "componentes/campo_form.html" with campo=form.fecha_publicacion %}
+            {% include "componentes/campo_form.html" with campo=form.fecha_limite_observaciones %}
+            {% include "componentes/campo_form.html" with campo=form.fecha_cierre %}
+            {% include "componentes/campo_form.html" with campo=form.fecha_adjudicacion %}
+
+            <div class="col-completa flex gap-2">
+                {% include "componentes/boton.html" with texto="Crear proceso" tipo="submit" variante="primario" %}
+                {% include "componentes/boton.html" with texto="Cancelar" href=url_lista variante="fantasma" %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

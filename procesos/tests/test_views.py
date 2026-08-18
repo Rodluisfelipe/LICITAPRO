@@ -1,12 +1,13 @@
 import pytest
 
-from core.tests.factories import EntidadFactory, UsuarioFactory
+from core.tests.factories import EntidadFactory, UsuarioFactory, usuario_comercial
 from procesos.models import Proceso
 from procesos.tests.factories import ProcesoFactory
 
 
 @pytest.mark.django_db
 def test_lista_procesos_filtra_por_estado(client):
+    client.force_login(usuario_comercial())
     entidad = EntidadFactory()
     detectado = ProcesoFactory(entidad=entidad, estado=Proceso.Estado.DETECTADO)
     apto = ProcesoFactory(entidad=entidad)
@@ -24,6 +25,7 @@ def test_lista_procesos_filtra_por_estado(client):
 
 @pytest.mark.django_db
 def test_orden_invalido_en_querystring_no_rompe_y_usa_default(client):
+    client.force_login(usuario_comercial())
     ProcesoFactory()
 
     respuesta = client.get(
@@ -41,7 +43,7 @@ def test_detalle_proceso_renderiza_statusbar_form_tabs_y_chatter(client):
     proceso = ProcesoFactory(numero_proceso="PROC-9999")
     ComentarioFactory(proceso=proceso, cuerpo="Un comentario visible en el chatter")
     ActividadFactory(proceso=proceso, titulo="Actividad visible en la pestaña")
-    client.force_login(UsuarioFactory())
+    client.force_login(usuario_comercial())
 
     respuesta = client.get(f"/procesos/{proceso.pk}/")
 
@@ -55,7 +57,7 @@ def test_detalle_proceso_renderiza_statusbar_form_tabs_y_chatter(client):
 @pytest.mark.django_db
 def test_transicion_valida_desde_el_statusbar_avanza_el_estado(client):
     proceso = ProcesoFactory(estado=Proceso.Estado.DETECTADO)
-    client.force_login(UsuarioFactory())
+    client.force_login(usuario_comercial())
 
     respuesta = client.post(f"/procesos/{proceso.pk}/transicion/iniciar_evaluacion/")
 
@@ -70,7 +72,7 @@ def test_transicion_no_disponible_no_rompe_y_deja_el_estado_intacto(client):
     # evaluación, apto, preparación primero). El servicio debe absorber el
     # TransitionNotAllowed en vez de tumbar la vista con un 500.
     proceso = ProcesoFactory(estado=Proceso.Estado.DETECTADO)
-    client.force_login(UsuarioFactory())
+    client.force_login(usuario_comercial())
 
     respuesta = client.post(f"/procesos/{proceso.pk}/transicion/presentar/")
 
@@ -91,7 +93,7 @@ def test_transicion_desconocida_devuelve_400(client):
 @pytest.mark.django_db
 def test_descartar_desde_statusbar_guarda_motivo_enviado_por_post(client):
     proceso = ProcesoFactory(estado=Proceso.Estado.DETECTADO)
-    client.force_login(UsuarioFactory())
+    client.force_login(usuario_comercial())
 
     respuesta = client.post(
         f"/procesos/{proceso.pk}/transicion/descartar/", {"motivo": "No cumplimos experiencia"},
@@ -106,7 +108,7 @@ def test_descartar_desde_statusbar_guarda_motivo_enviado_por_post(client):
 @pytest.mark.django_db
 def test_verificar_fechas_llena_por_y_en(client):
     proceso = ProcesoFactory()
-    usuario = UsuarioFactory()
+    usuario = usuario_comercial()
     client.force_login(usuario)
     assert proceso.fechas_verificadas_por is None
 
@@ -120,6 +122,7 @@ def test_verificar_fechas_llena_por_y_en(client):
 
 @pytest.mark.django_db
 def test_procesos_sin_vista_en_querystring_muestra_kanban_por_defecto(client):
+    client.force_login(usuario_comercial())
     ProcesoFactory(estado=Proceso.Estado.DETECTADO)
 
     respuesta = client.get("/procesos/")
@@ -131,6 +134,7 @@ def test_procesos_sin_vista_en_querystring_muestra_kanban_por_defecto(client):
 
 @pytest.mark.django_db
 def test_kanban_agrupa_procesos_por_columna_de_estado(client):
+    client.force_login(usuario_comercial())
     detectado = ProcesoFactory(estado=Proceso.Estado.DETECTADO)
     en_evaluacion = ProcesoFactory(estado=Proceso.Estado.DETECTADO)
     en_evaluacion.iniciar_evaluacion()
@@ -147,7 +151,7 @@ def test_kanban_agrupa_procesos_por_columna_de_estado(client):
 @pytest.mark.django_db
 def test_mover_kanban_ejecuta_la_transicion_valida(client):
     proceso = ProcesoFactory(estado=Proceso.Estado.DETECTADO)
-    client.force_login(UsuarioFactory())
+    client.force_login(usuario_comercial())
 
     respuesta = client.post(f"/procesos/{proceso.pk}/mover/en_evaluacion/")
 

@@ -13,6 +13,16 @@
 <div class="pagina-kanban">
     {% include "componentes/panel_control.html" %}
 
+    {% if tablero_vacio %}
+        <div class="vacio panel" style="padding: var(--esp-8) var(--esp-4)">
+            <p>Todavía no hay procesos.</p>
+            {% if perms.procesos.crear_procesos %}
+                <a href="{% url 'procesos:crear' %}" class="btn primario" style="margin-top: var(--esp-2)">
+                    Crear el primero
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
     <p class="texto-xs texto-sec" style="margin: 0 0 8px">
         {% if incluir_todos %}
             Mostrando todos los estados · <a href="?vista=kanban">volver al tablero activo</a>
@@ -21,7 +31,8 @@
         {% endif %}
     </p>
 
-    <div class="tablero flex-1">
+    <div class="tablero flex-1{% if not puede_mover_etapa %} tablero--solo-lectura{% endif %}"
+         data-puede-mover="{{ puede_mover_etapa|yesno:'1,' }}">
         {% for columna in columnas %}
             <div class="tablero__columna">
                 <div class="tablero__cab">
@@ -42,11 +53,12 @@
                     {% for proceso in columna.procesos %}
                         {% include "componentes/tarjeta_proceso.html" with proceso=proceso %}
                     {% empty %}
-                        <div class="tablero__vacio">Sin procesos</div>
+                        <div class="tablero__vacio">Sin procesos en esta etapa</div>
                     {% endfor %}
                 </div>
             </div>
         {% endfor %}
     </div>
+    {% endif %}
 </div>
 {% endblock %}

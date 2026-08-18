@@ -26,6 +26,18 @@ def entidades_autocompletar(request):
     )
 
 
+def entidades_seleccionar(request):
+    """Como entidades_autocompletar, pero devuelve resultados clicables para
+    elegir una entidad dentro de un formulario (creación manual de proceso)."""
+    termino = request.GET.get("q", "").strip()
+    entidades_encontradas = buscar_entidades(termino) if termino else []
+    return render(
+        request,
+        "core/partials/opciones_entidad.html#opciones_entidad",
+        {"entidades": entidades_encontradas},
+    )
+
+
 @require_POST
 def actualizar_preferencias(request):
     """Persiste tema/densidad/vista_preferida en segundo plano. El DOM ya

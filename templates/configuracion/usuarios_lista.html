@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block titulo %}Usuarios — LicitaPro{% endblock %}
+
+{% block migas %}<span class="actual">Usuarios</span>{% endblock %}
+
+{% block contenido %}
+<div class="contenedor">
+    <h2 style="font-size: var(--fuente-lg); margin: 0 0 var(--esp-4)">Usuarios</h2>
+    <div class="panel">
+        <table class="tabla">
+            <thead>
+                <tr>
+                    <th>Nombre</th><th>Correo</th><th>Perfil</th><th>Cargo</th>
+                    <th>Activo</th><th>Último acceso</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                    {% include "configuracion/partials/fila_usuario.html" with usuario=usuario grupos=grupos %}
+                {% empty %}
+                    <tr><td colspan="7" class="vacio">Sin usuarios todavía.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

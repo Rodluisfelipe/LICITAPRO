@@ -32,6 +32,12 @@
 
             <div class="barra-lateral__grupo">Empresa</div>
             <span class="barra-lateral__enlace inerte">Perfil</span>
+
+            {% if perms.core.gestionar_usuarios %}
+                <div class="barra-lateral__grupo">Configuración</div>
+                <a href="{% url 'configuracion:perfiles_lista' %}" class="barra-lateral__enlace">Perfiles</a>
+                <a href="{% url 'configuracion:usuarios_lista' %}" class="barra-lateral__enlace">Usuarios</a>
+            {% endif %}
         </nav>
     </aside>
 
@@ -52,6 +58,9 @@
                     </button>
                 </div>
                 <span class="preferencias__usuario">{{ request.user }}</span>
+                <a href="{% url 'account_logout' %}" class="preferencias__btn" title="Cerrar sesión">
+                    <svg class="icono"><use href="#i-cerrar"></use></svg>
+                </a>
             </div>
         </header>
 

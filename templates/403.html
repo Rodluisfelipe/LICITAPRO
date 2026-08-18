@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block titulo %}Sin permiso — LicitaPro{% endblock %}
+
+{% block migas %}<span class="actual">Sin permiso</span>{% endblock %}
+
+{% block contenido %}
+<div class="contenedor-ancho" style="text-align:center; padding-top: var(--esp-10)">
+    <div class="panel panel__cuerpo" style="max-width: 420px; margin: 0 auto">
+        <div style="font-size: var(--fuente-xl); font-weight: var(--peso-fuerte); margin-bottom: var(--esp-2)">
+            No tienes permiso
+        </div>
+        <p class="texto-sec" style="margin-bottom: var(--esp-4)">
+            No tienes acceso a esta sección. Si crees que deberías, pide a un
+            administrador que revise tu perfil en Configuración → Usuarios.
+        </p>
+        <a href="{% url 'procesos:lista' %}" class="btn secundario">Volver a Procesos</a>
+    </div>
+</div>
+{% endblock %}

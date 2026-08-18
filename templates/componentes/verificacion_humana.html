@@ -5,10 +5,14 @@
             {{ proceso.fechas_verificadas_por.get_full_name|default:proceso.fechas_verificadas_por.username }}
             el {{ proceso.fechas_verificadas_en|date:"d/m/Y H:i" }}</span>
     </div>
-{% else %}
+{% elif perms.procesos.verificar_fechas %}
     <form method="post" action="{% url 'procesos:verificar_fechas' proceso.pk %}" class="verificacion">
         {% csrf_token %}
         <span class="verificacion__pendiente">⚠ Sin verificar</span>
         <button type="submit" class="verificacion__accion">Marcar como verificado</button>
     </form>
+{% else %}
+    <div class="verificacion">
+        <span class="verificacion__pendiente">⚠ Sin verificar</span>
+    </div>
 {% endif %}

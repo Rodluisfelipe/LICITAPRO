@@ -1,0 +1,18 @@
+{% load partials %}
+{% partialdef opciones_entidad inline %}
+{% if entidades %}
+    <div class="panel" style="box-shadow: var(--sombra-md); overflow: hidden">
+        {% for entidad in entidades %}
+            <button type="button" class="chatter__sugerencia"
+                    onclick="licitapro.seleccionarEntidad('{{ entidad.pk }}', '{{ entidad.nombre|escapejs }}')">
+                <span style="font-weight: var(--peso-medio)">{{ entidad.nombre }}</span>
+                <span class="texto-terciario texto-xs"> — {{ entidad.nit|default:"sin NIT" }}{% if entidad.municipio %}, {{ entidad.municipio }}{% endif %}</span>
+            </button>
+        {% endfor %}
+    </div>
+{% elif request.GET.q %}
+    <div class="panel texto-xs texto-sec" style="padding: var(--esp-2) var(--esp-3)">
+        Sin coincidencias para "{{ request.GET.q }}".
+    </div>
+{% endif %}
+{% endpartialdef %}

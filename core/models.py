@@ -8,6 +8,8 @@ from django.db import models
 from django.db.models import Q
 from pgvector.django import HnswIndex, VectorField
 
+from procesos.permisos import ETIQUETA_POR_CODENAME
+
 EMBEDDING_DIMS = 1024  # BGE-M3 / Qwen3-Embedding-0.6B
 
 
@@ -58,6 +60,16 @@ class Usuario(AbstractUser):
     densidad = models.CharField(max_length=10, choices=Densidad.choices, default=Densidad.NORMAL)
     vista_preferida = models.CharField(max_length=10, choices=Vista.choices, default=Vista.KANBAN)
 
+    class Meta(AbstractUser.Meta):
+        # `class Meta(AbstractUser.Meta)` extiende en vez de reemplazar —
+        # `abstract` nunca se hereda (Django lo resetea a False a propósito
+        # en subclases concretas), así que esto no vuelve abstracto a Usuario.
+        # De paso corrige verbose_name: AbstractUser lo trae en inglés y
+        # nunca se había sobreescrito.
+        verbose_name = "usuario"
+        verbose_name_plural = "usuarios"
+        permissions = [("gestionar_usuarios", ETIQUETA_POR_CODENAME["gestionar_usuarios"])]
+
 
 class Entidad(TimeStamped):
     """Entidad contratante. Autocompletado vía pg_trgm sobre nombre y NIT."""
@@ -93,6 +105,7 @@ class Entidad(TimeStamped):
                 fields=["nit"], condition=~Q(nit=""), name="uq_entidad_nit",
             ),
         ]
+        permissions = [("gestionar_entidades", ETIQUETA_POR_CODENAME["gestionar_entidades"])]
 
     def __str__(self):
         return self.nombre

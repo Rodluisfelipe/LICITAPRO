@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block titulo %}Perfiles — LicitaPro{% endblock %}
+
+{% block migas %}<span class="actual">Perfiles</span>{% endblock %}
+
+{% block contenido %}
+<div class="contenedor">
+    <div class="flex justify-entre items-centro" style="margin-bottom: var(--esp-4)">
+        <h2 style="font-size: var(--fuente-lg); margin: 0">Perfiles</h2>
+        <a href="{% url 'configuracion:perfil_crear' %}" class="btn primario">Nuevo perfil</a>
+    </div>
+
+    <div class="panel">
+        <table class="tabla">
+            <thead>
+                <tr><th>Nombre</th><th>Descripción</th><th class="texto-derecha">Usuarios</th></tr>
+            </thead>
+            <tbody>
+                {% for fila in filas %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'configuracion:perfil_detalle' fila.grupo.pk %}">{{ fila.grupo.name }}</a>
+                            {% if fila.es_de_arranque %}
+                                <span class="badge gris">arranque</span>
+                            {% endif %}
+                        </td>
+                        <td class="texto-sec">{{ fila.descripcion|default:"—" }}</td>
+                        <td class="texto-derecha numeros-tabulares">{{ fila.num_usuarios }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="3" class="vacio">Sin perfiles todavía.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

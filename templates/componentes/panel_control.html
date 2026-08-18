@@ -16,4 +16,10 @@
         <input type="hidden" name="vista" value="{{ vista_actual }}">
         {% include "componentes/faceta_busqueda.html" with nombre="q" valor=request.GET.q placeholder="Buscar número u objeto..." %}
     </form>
+
+    {% if perms.procesos.crear_procesos %}
+        <a href="{% url 'procesos:crear' %}" class="btn primario">
+            <svg class="icono"><use href="#i-mas"></use></svg> Nuevo
+        </a>
+    {% endif %}
 </div>

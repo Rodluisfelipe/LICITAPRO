@@ -158,7 +158,7 @@ def requisitos_vigentes_en(proceso: Proceso, version: VersionDocumental):
     )
 
 
-def procesos_con_metricas():
+def procesos_con_metricas(usuario=None):
     """Un solo queryset anotado para tablero (kanban) y lista: cumplimiento
     de requisitos vigentes y severidad máxima de riesgo activo, sin una
     consulta por tarjeta/fila.
@@ -167,9 +167,18 @@ def procesos_con_metricas():
     CharField eso ordena alfabéticamente ("media" > "alta" > "baja"), lo que
     reportaría un riesgo medio como "peor" que uno alto en cuanto ambos
     coexistan. Se anota un rango numérico vía Case/When y se traduce de
-    vuelta con el filtro `rango_a_severidad`."""
+    vuelta con el filtro `rango_a_severidad`.
+
+    `usuario` filtra el alcance según el permiso `ver_todos` (día 2-3 de la
+    primera entrega): sin él, solo procesos donde es responsable o
+    seguidor — así kanban, lista y el detalle (que reutiliza este mismo
+    queryset para el 404 de "no es tuyo") quedan cubiertos de una sola vez,
+    en el service y no en cada vista."""
     vigentes = Q(requisitos__reemplazado_por__isnull=True)
-    return Proceso.objects.select_related("entidad", "responsable").annotate(
+    qs = Proceso.objects.select_related("entidad", "responsable")
+    if usuario is not None and not usuario.has_perm("procesos.ver_todos"):
+        qs = qs.filter(Q(responsable=usuario) | Q(seguidores=usuario)).distinct()
+    return qs.annotate(
         req_cumple=Count("requisitos", filter=vigentes & Q(requisitos__cumplimiento="cumple")),
         req_parcial=Count("requisitos", filter=vigentes & Q(requisitos__cumplimiento="parcial")),
         req_no=Count(

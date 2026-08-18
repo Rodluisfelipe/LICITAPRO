@@ -1,6 +1,23 @@
 {% load partials humanize %}
 {% partialdef tabla_procesos inline %}
 <div id="tabla-procesos-wrapper">
+    {% if facetas_activas %}
+        <div class="flex flex-envolver items-centro gap-2" style="margin-bottom: var(--esp-3)">
+            {% for faceta in facetas_activas %}
+                <a class="chip-faceta"
+                   href="?{{ faceta.querystring_sin_esta }}"
+                   hx-get="?{{ faceta.querystring_sin_esta }}"
+                   hx-target="#tabla-procesos-wrapper" hx-swap="outerHTML" hx-push-url="true">
+                    {{ faceta.etiqueta }}: {{ faceta.valor }} <span aria-hidden="true">×</span>
+                </a>
+            {% endfor %}
+            <a class="chip-faceta chip-faceta--limpiar" href="{% url 'procesos:lista' %}?vista=lista"
+               hx-get="{% url 'procesos:lista' %}?vista=lista"
+               hx-target="#tabla-procesos-wrapper" hx-swap="outerHTML" hx-push-url="true">
+                Limpiar filtros
+            </a>
+        </div>
+    {% endif %}
     <div class="panel" style="overflow-x:auto">
         <table class="tabla">
             <thead>
@@ -52,7 +69,26 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="vacio">Sin procesos para los filtros seleccionados.</td>
+                    <td colspan="7" class="vacio">
+                        {% if not hay_procesos_sin_filtrar %}
+                            <p>Todavía no hay procesos.</p>
+                            {% if perms.procesos.crear_procesos %}
+                                <a href="{% url 'procesos:crear' %}" class="btn primario" style="margin-top: var(--esp-2)">
+                                    Crear el primero
+                                </a>
+                            {% endif %}
+                        {% elif facetas_activas %}
+                            <p>Sin resultados para estos filtros.</p>
+                            <a href="{% url 'procesos:lista' %}?vista=lista"
+                               hx-get="{% url 'procesos:lista' %}?vista=lista"
+                               hx-target="#tabla-procesos-wrapper" hx-swap="outerHTML" hx-push-url="true"
+                               class="btn secundario" style="margin-top: var(--esp-2)">
+                                Limpiar filtros
+                            </a>
+                        {% else %}
+                            <p>Sin procesos para los filtros seleccionados.</p>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

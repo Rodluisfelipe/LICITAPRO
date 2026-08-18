@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "perfil",
     "ia",
     "social",
+    "configuracion",
 ]
 
 MIDDLEWARE = [
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "auditlog.middleware.AuditlogMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
@@ -94,7 +96,18 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-LOGIN_REDIRECT_URL = "/"
+# El único camino de entrada es Google (ver core/adapters.py). LOGIN_URL
+# apunta a la vista de allauth; LOGIN_REDIRECT_URL a la pantalla principal.
+LOGIN_URL = "account_login"
+LOGIN_REDIRECT_URL = "/procesos/"
+
+ACCOUNT_ADAPTER = "core.adapters.AccountAdapterSinRegistro"
+SOCIALACCOUNT_ADAPTER = "core.adapters.SocialAccountAdapterDominio"
+SOCIALACCOUNT_AUTO_SIGNUP = True  # el primer login crea el Usuario sin pasos extra
+ACCOUNT_EMAIL_VERIFICATION = "none"  # Google ya verificó el correo
+SOCIALACCOUNT_STORE_TOKENS = False  # no necesitamos el access token de Google después del login
+
+GOOGLE_WORKSPACE_DOMAIN = env("GOOGLE_WORKSPACE_DOMAIN", default="")
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
@@ -106,7 +119,10 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ["profile", "email"],
         "AUTH_PARAMS": {
             "access_type": "online",
-            "hd": env("GOOGLE_WORKSPACE_DOMAIN", default=""),
+            # UX únicamente (preselecciona el dominio en el selector de
+            # cuentas de Google) — la restricción real está en
+            # SocialAccountAdapterDominio.pre_social_login, no acá.
+            "hd": GOOGLE_WORKSPACE_DOMAIN,
         },
     }
 }

@@ -160,6 +160,16 @@ input:focus, select:focus, textarea:focus {
 .badge.rojo     { color: var(--rojo);     background: var(--rojo-bg);     border-color: var(--rojo-bd); }
 .badge.ia       { color: var(--ia);       background: var(--ia-bg);       border-color: var(--ia-bd); }
 
+/* ---- facetas de filtro activas, removibles ---- */
+.chip-faceta {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px var(--esp-2);
+    border-radius: var(--radio-completo); font-size: var(--fuente-xs); font-weight: var(--peso-medio);
+    border: 1px solid var(--borde-fuerte); background: var(--superficie-2); color: var(--texto-sec);
+    text-decoration: none; white-space: nowrap;
+}
+.chip-faceta:hover { background: var(--azul-bg); border-color: var(--azul-bd); color: var(--azul); }
+.chip-faceta--limpiar { color: var(--texto-terciario); border-style: dashed; }
+
 /* ---- dato_sinverificar ---- */
 .dato.sinver { position: relative; }
 .dato.sinver::after { content: '⚠'; color: var(--sinver); font-size: var(--fuente-xs); margin-left: 4px; }
@@ -263,6 +273,12 @@ input:focus, select:focus, textarea:focus {
 .orden-col a:hover { color: var(--texto); }
 .orden-col .flecha { color: var(--texto-terciario); width: 8px; display: inline-block; }
 
+/* ---- matriz de permisos (configuración de perfiles) ---- */
+.matriz-permisos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--esp-4); margin: var(--esp-4) 0; }
+.matriz-permisos__modulo { border: 1px solid var(--borde); border-radius: var(--radio-md); padding: var(--esp-3); }
+.matriz-permisos__cab { display: flex; justify-content: space-between; align-items: center; gap: var(--esp-2); margin-bottom: var(--esp-2); }
+.matriz-permisos__item { display: flex; align-items: center; gap: var(--esp-2); font-size: var(--fuente-base, 13px); padding: 4px 0; }
+
 /* ---- panel_control / faceta_busqueda ---- */
 .panel-control { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--esp-3); padding: var(--esp-3) 0; }
 .segmentado { display: inline-flex; border: 1px solid var(--borde-fuerte); border-radius: var(--radio-sm); overflow: hidden; }
@@ -307,6 +323,7 @@ input:focus, select:focus, textarea:focus {
     gap: var(--esp-2); cursor: grab;
 }
 .tarjeta:active { cursor: grabbing; }
+.tablero--solo-lectura .tarjeta { cursor: default; }
 .tarjeta.critica { border-color: var(--rojo-bd); box-shadow: 0 0 0 1px var(--rojo-bd); }
 .tarjeta.pronta { border-color: var(--amarillo-bd); }
 .tarjeta__cab { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--esp-2); }

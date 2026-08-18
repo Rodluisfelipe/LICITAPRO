@@ -5,6 +5,7 @@ from django.utils import timezone
 from django_fsm import FSMField, transition
 
 from core.models import CodigoUNSPSC, Entidad, Origen, TimeStamped
+from procesos.permisos import CATALOGO_PERMISOS
 
 
 class Proceso(TimeStamped):
@@ -104,6 +105,14 @@ class Proceso(TimeStamped):
             models.UniqueConstraint(
                 fields=["entidad", "numero_proceso"], name="uq_proceso_entidad_numero",
             ),
+        ]
+        # Catálogo en procesos/permisos.py — única fuente de verdad, la
+        # interfaz de perfiles lee de ahí, no de acá.
+        permissions = [
+            (codename, etiqueta)
+            for modulo in CATALOGO_PERMISOS.values()
+            for app_label, codename, etiqueta in modulo
+            if app_label == "procesos"
         ]
 
     def __str__(self):

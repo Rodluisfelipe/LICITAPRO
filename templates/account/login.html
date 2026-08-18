@@ -1,0 +1,37 @@
+{% load socialaccount static %}
+<!DOCTYPE html>
+<html lang="es" data-tema="claro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión — LicitaPro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="flex items-centro" style="justify-content:center; min-height:100vh">
+    <div class="panel" style="width:320px; padding:var(--esp-8); text-align:center">
+        <div style="font-size:var(--fuente-xl); font-weight:var(--peso-fuerte); margin-bottom:var(--esp-1)">
+            LicitaPro
+        </div>
+        <p class="texto-sec texto-xs" style="margin:0 0 var(--esp-6)">
+            Acceso exclusivo para el equipo interno.
+        </p>
+
+        {% if messages %}
+            <div class="mensajes" style="padding:0; margin-bottom:var(--esp-4); text-align:left">
+                {% for message in messages %}
+                    <div class="mensaje {{ message.tags|default:'info' }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <a href="{% provider_login_url 'google' %}" class="btn primario"
+           style="width:100%; justify-content:center; padding-top: var(--esp-3); padding-bottom: var(--esp-3)">
+            Continuar con Google
+        </a>
+    </div>
+</body>
+</html>

@@ -213,3 +213,176 @@
   estado "analizando" con polling HTMX dirigido, rehacer la vista lista
   con densidad de referencia + columna Ajuste, y la sección "Diseño" en
   CLAUDE.md con la regla del violeta.
+
+## 2026-08-18 — Autenticación: Google Workspace, dominio en el adapter
+
+- Primera entrega contractual, día 1. Hasta hoy no había **ninguna** vista
+  protegida — se agregó `django.contrib.auth.middleware.LoginRequiredMiddleware`
+  (nativo desde Django 5.1, no un paquete nuevo) en vez de decorar cada vista
+  a mano: por defecto exige sesión en *todo*, y las únicas vistas públicas
+  son las que allauth ya marca con `login_not_required` (login, logout,
+  callback de Google) — exactamente el modelo "todo cerrado salvo
+  excepción explícita" que pedía el contrato, sin tener que acordarse de
+  decorar cada vista nueva que se agregue después.
+- **La restricción de dominio va en `SocialAccountAdapterDominio.pre_social_login`
+  (`core/adapters.py`), no solo en el parámetro `hd` de `AUTH_PARAMS`.**
+  `hd` es una preferencia que Django le pasa a la pantalla de selección de
+  cuenta de Google — es UX, no seguridad: un usuario puede editarlo a mano
+  en la URL de autorización, o Google puede simplemente no respetarlo para
+  cuentas personales. La única verificación que no se puede evadir desde
+  el navegador es la que ocurre del lado del servidor, después de que
+  Google ya devolvió el email real de la cuenta — por eso `pre_social_login`
+  y no el parámetro de la URL. `hd` se deja igual, como atajo cosmético
+  para que el selector de Google no muestre cuentas personales de entrada,
+  pero el gate real es el del adapter.
+- El mismo adapter resuelve un problema derivado: `crear_admins` pre-crea
+  el `Usuario` de los dos administradores generales ANTES de su primer
+  login (así el contrato "dos cuentas de administrador general" se cumple
+  desde el día uno, no desde que alguien decide loguearse). Sin conectar
+  esa cuenta pre-creada a su `SocialAccount` de Google, `SOCIALACCOUNT_AUTO_SIGNUP`
+  habría creado un *segundo* Usuario duplicado en el primer login. `pre_social_login`
+  busca por email antes de dejar que allauth cree nada, y si hay match usa
+  `sociallogin.connect()` — y si ese usuario existente está `is_active=False`,
+  lo rechaza ahí mismo (un admin desactivado no debería poder re-entrar
+  solo porque su correo sigue siendo válido en Google).
+- `ACCOUNT_ADAPTER` (signup por formulario) y `SOCIALACCOUNT_ADAPTER`
+  (login social) son dos hooks *distintos* en allauth — desactivar el
+  primero (`is_open_for_signup` → `False`) no toca el segundo. El alta
+  automática por Google sigue funcionando exactamente igual;
+  solo se cerró `/accounts/signup/`, el formulario de correo+contraseña.
+- `templates/account/login.html` reemplaza la plantilla por defecto de
+  allauth — sin ella, allauth muestra su propio formulario de login con
+  usuario/contraseña visible aunque esté desactivado, lo cual confundiría
+  al único camino de entrada real (el botón de Google).
+- Pendiente cerrado del día 1: los rechazos del adapter (dominio ajeno,
+  usuario desactivado) sí aterrizan en nuestra página de login con el
+  mensaje visible, en claro y oscuro — confirmado con un test que
+  reproduce el ciclo real (mismo request, misma sesión que sigue el
+  cliente de pruebas) y con captura de pantalla. No hizo falta cambiar
+  código: `messages.error()` + `ImmediateHttpResponse(redirect(...))` ya
+  sobrevive el redirect porque `CookieStorage` (la primera de las dos
+  storages de `FallbackStorage`) pone el mensaje en una cookie de la
+  respuesta que sí vuelve al navegador.
+
+## 2026-08-18 — Perfiles y permisos configurables desde la interfaz
+
+- **`django.contrib.auth.Group`/`Permission`, no `django-guardian`.** Los
+  permisos de esta entrega son por modelo y acción ("¿puede mover_etapa?"),
+  nunca por objeto ("¿puede mover ESTE proceso puntual?"). `guardian` ya
+  está instalado en el proyecto (se agregó pensando en un futuro "solo mis
+  procesos" a nivel de fila), pero usarlo acá habría sido resolver con
+  permisos por objeto un problema que es de rol — más superficie, cero
+  beneficio real hoy. Si en el futuro hace falta permiso por objeto
+  puntual, se decide esa vez; el alcance "ver todo el equipo vs. solo lo
+  mío" ya quedó cubierto con un permiso de rol (`ver_todos`) más un filtro
+  por `responsable`/`seguidores`, sin tocar guardian.
+- El catálogo de permisos vive en `procesos/permisos.py` — una sola fuente
+  de verdad de la que leen tanto los `Meta.permissions` de `Proceso` /
+  `Entidad` / `Usuario` como la interfaz de `/configuracion/perfiles/`. Un
+  administrador no técnico nunca ve un codename, solo la etiqueta en
+  español del catálogo.
+- `mover_etapa` y `descartar_procesos` son permisos DISTINTOS a propósito
+  (así lo pide el catálogo del contrato). `procesos.permisos.
+  permiso_requerido_para_transicion()` centraliza esa regla — "descartar"
+  exige `descartar_procesos`, cualquier otra transición del flujo
+  (incluida `suspender`, que no tiene permiso propio en el catálogo) exige
+  `mover_etapa`. La usan tanto `transicionar_proceso` como `mover_kanban`
+  (el drag&drop), así que el mapeo nunca se duplica ni se desincroniza
+  entre el statusbar y el tablero.
+- **`ver_todos` se filtra en `procesos.services.procesos_con_metricas()`,
+  no en cada vista** — exactamente como pedía el enunciado. Eso significa
+  que kanban, lista Y el detalle (que reutiliza el mismo queryset para el
+  `get_object_or_404`) heredan el alcance de una sola vez. Sin
+  `ver_todos`, un proceso ajeno da 404 en el detalle, no 403 — el ORM
+  simplemente no lo encuentra en el queryset con alcance, así que no hay
+  manera de que la vista "sepa" que existe para decidir entre 403 y 404.
+- **Bug real encontrado corriendo los tests, no solo en teoría**: los
+  `Permission` que declara `Meta.permissions` los crea el signal
+  `post_migrate` de `django.contrib.auth`, que se dispara una sola vez al
+  FINAL de todo el batch de `migrate` — no incrementalmente después de
+  cada migración. La data migration `procesos.0006_perfiles_de_arranque`
+  corre en el MISMO batch que la migración que declara esos permisos
+  cuando se migra desde cero (base de datos de test de pytest, `make
+  reset`, un deploy nuevo), así que `Permission.objects.filter(...)`
+  dentro de ella no encontraba nada todavía y los tres grupos de arranque
+  quedaban creados pero sin un solo permiso. Se corrigió llamando
+  `django.contrib.auth.management.create_permissions` a mano dentro de la
+  migración antes de consultar. Se detectó porque el test suite completo
+  (que sí migra desde cero) fallaba con 403 en vistas que deberían
+  funcionar — la base de datos de dev no lo mostró porque ahí las
+  migraciones se habían aplicado en comandos `migrate` separados, dándole
+  tiempo al signal de disparar entre una y otra por accidente.
+- `PerfilInfo` (`configuracion/models.py`) es una tabla aparte 1:1 con
+  `Group` — el contrato pide "nombre, descripción" por perfil pero `Group`
+  no trae `descripcion` de fábrica y no se puede modificar directamente
+  (es de `django.contrib.auth`). Es el patrón estándar de Django para
+  extender un modelo de terceros sin tocarlo.
+- Autoprotección: un administrador no puede desactivarse a sí mismo
+  (`usuario_alternar_activo`) ni quitarse a sí mismo su única fuente de
+  `gestionar_usuarios`, ya sea cambiando su propio perfil desde la lista
+  de usuarios (`usuario_cambiar_perfil`) o quitándose a sí mismo de un
+  grupo desde el detalle del perfil (`perfil_quitar_usuario`). Lo que NO
+  se bloquea a propósito: editar la matriz de permisos de un grupo
+  compartido de forma que indirectamente el propio admin pierda acceso —
+  eso afecta a otros usuarios del mismo grupo, no es una acción
+  "dirigida a uno mismo", y bloquearlo habría estorbado ediciones
+  legítimas del perfil.
+- El drag&drop respeta `mover_etapa` en dos capas: si el usuario no lo
+  tiene, `kanban.js` ni siquiera inicializa SortableJS (las tarjetas no
+  son arrastrables), y el endpoint `mover_kanban` lo vuelve a exigir del
+  lado del servidor — un POST directo con curl sin el permiso da 403
+  aunque nunca haya pasado por el navegador.
+
+## 2026-08-18 — Creación manual de procesos (ítem 3, día 4 de la primera entrega)
+
+- **Auditoría de las 9 transiciones del FSM contra la interfaz**: las nueve
+  (`iniciar_evaluacion`, `descartar`, `marcar_apto`, `iniciar_preparacion`,
+  `presentar`, `adjudicar`, `perder`, `declarar_desierto`, `suspender`) ya
+  tenían un camino real desde el statusbar del detalle — el pipeline
+  cubre las de avance, y `estado_ui.laterales` (calculado en
+  `services.estado_disponible`) cubre TODAS las que no están en
+  `ETAPAS_PIPELINE`, incluida `suspender` (que usa `source="*"` en el
+  modelo, así que siempre aparece como lateral) y `declarar_desierto`. El
+  kanban también llega a las nueve, pero las que aterrizan en un estado de
+  salida (descartado/adjudicado/no_adjudicado/desierto) necesitan
+  `?todos=1` para que la columna destino exista — diseño intencional, no
+  un hueco: esos estados se tratan como desenlaces, no como una columna
+  más del día a día.
+- **Hueco real que sí se corrigió**: arrastrar una tarjeta a la columna
+  "Descartado" no pedía motivo — `mover_kanban` lo rellenaba con un texto
+  genérico. El statusbar sí exige el motivo (textarea `required`). Se
+  corrigió en `kanban.js` con `window.prompt()` antes de llamar al
+  endpoint: cancelar o dejarlo vacío revierte la tarjeta sin pegarle al
+  servidor. No se construyó un modal Alpine para esto (ya existe uno en el
+  statusbar para quien prefiera esa ruta) — un `prompt()` es la opción de
+  menos código para un caso que ocurre poco.
+- **Creación manual (`/procesos/nuevo/`)**: la entidad se resuelve con el
+  mismo patrón de autocompletado seleccionable que las @menciones del
+  chatter (un input de texto + un endpoint que devuelve botones clicables
+  que rellenan un input oculto), no con el `<select>` gigante que ya usa
+  el filtro de lista — con cientos de entidades un `<select>` no escala y
+  ya existía el patrón de autocompletado en el proyecto. La opción "crear
+  entidad nueva en línea" (gate `core.gestionar_entidades`) usa el
+  `prefix` nativo de Django forms (`EntidadForm(prefix="nueva_entidad")`)
+  para convivir con `ProcesoForm` en el mismo POST sin colisión de
+  nombres — evita un segundo endpoint AJAX solo para crear la entidad. Si
+  la entidad nueva no valida, se hace rollback de la transacción completa
+  (no queda una `Entidad` huérfana si el `Proceso` después falla).
+  `origen=Origen.MANUAL` se fija explícitamente en la vista aunque ya sea
+  el default del modelo — la invariante 4 pide que el campo nunca se
+  omita, no que se confíe en un default silencioso.
+- **Facetas de filtro removibles**: los filtros de lista (estado, entidad,
+  modalidad, responsable, rango de cierre, texto) ya eran combinables por
+  `django_filters` — lo que faltaba era hacerlos *visibles* como chips
+  independientes. Se calculan en `_facetas_activas` (vista, no template)
+  porque construir "la querystring actual sin esta clave" es más claro en
+  Python que en DTL. Viven dentro del fragmento que HTMX intercambia
+  (`tabla-procesos-wrapper`) para que aparecer/desaparecer sea parte del
+  mismo swap que ya disparan los filtros.
+- **Estados vacíos**: se distingue "no hay procesos todavía" (banner con
+  CTA "Crear el primero", gateado por `crear_procesos`) de "hay procesos
+  pero ningún filtro los encuentra" (mensaje + botón "Limpiar filtros") —
+  antes ambos casos mostraban el mismo texto genérico. La distinción se
+  calcula con una segunda consulta `.exists()` sin filtrar
+  (`hay_procesos_sin_filtrar` / `tablero_vacio`), aceptable porque es una
+  sola query barata comparada con el resto de la vista.

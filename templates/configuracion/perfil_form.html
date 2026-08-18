@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titulo %}{% if es_nuevo %}Nuevo perfil{% else %}{{ grupo.name }}{% endif %} — LicitaPro{% endblock %}
+
+{% block migas %}
+    <a href="{% url 'configuracion:perfiles_lista' %}">Perfiles</a>
+    <span class="texto-terciario">/</span>
+    <span class="actual">{% if es_nuevo %}Nuevo{% else %}{{ grupo.name }}{% endif %}</span>
+{% endblock %}
+
+{% block extra_head %}
+    <script src="{% static 'js/configuracion.js' %}"></script>
+{% endblock %}
+
+{% block contenido %}
+<div class="contenedor-ancho flex flex-col gap-4">
+    <div class="panel panel__cuerpo">
+        <form method="post">
+            {% csrf_token %}
+            {% include "componentes/campo_form.html" with campo=form.nombre %}
+            {% include "componentes/campo_form.html" with campo=form.descripcion %}
+
+            {% if es_de_arranque %}
+                <p class="texto-xs texto-sec">
+                    Perfil de arranque: se puede editar, no se puede eliminar.
+                </p>
+            {% endif %}
+
+            <div class="matriz-permisos">
+                {% for modulo, permisos in catalogo.items %}
+                    <div class="matriz-permisos__modulo">
+                        <div class="matriz-permisos__cab">
+                            <span style="font-weight: var(--peso-semi)">{{ modulo }}</span>
+                            <button type="button" class="btn fantasma" onclick="licitapro.alternarModulo(this)">
+                                Marcar/desmarcar todo
+                            </button>
+                        </div>
+                        {% for app_label, codename, etiqueta in permisos %}
+                            <label class="matriz-permisos__item">
+                                <input type="checkbox" name="permisos" value="{{ codename }}"
+                                       {% if codename in codenames_actuales %}checked{% endif %}>
+                                {{ etiqueta }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% include "componentes/boton.html" with texto="Guardar" tipo="submit" variante="primario" %}
+        </form>
+
+        {% if not es_de_arranque and not es_nuevo %}
+            <form method="post" action="{% url 'configuracion:perfil_eliminar' grupo.pk %}"
+                  style="margin-top: var(--esp-4)">
+                {% csrf_token %}
+                {% include "componentes/boton.html" with texto="Eliminar perfil" tipo="submit" variante="peligro" %}
+            </form>
+        {% endif %}
+    </div>
+
+    {% if not es_nuevo %}
+        <div class="panel panel__cuerpo">
+            <h3 style="font-size: var(--fuente-md); font-weight: var(--peso-semi); margin: 0 0 var(--esp-3)">
+                Usuarios asignados ({{ usuarios_asignados|length }})
+            </h3>
+            <table class="tabla">
+                <thead><tr><th>Nombre</th><th>Correo</th><th></th></tr></thead>
+                <tbody>
+                    {% for usuario in usuarios_asignados %}
+                        <tr>
+                            <td>{{ usuario.get_full_name|default:usuario.username }}</td>
+                            <td class="texto-sec">{{ usuario.email }}</td>
+                            <td class="texto-derecha">
+                                <form method="post"
+                                      action="{% url 'configuracion:perfil_quitar_usuario' grupo.pk usuario.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn fantasma">Quitar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="3" class="vacio">Sin usuarios asignados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if otros_usuarios %}
+                <form method="post" action="{% url 'configuracion:perfil_agregar_usuario' grupo.pk %}"
+                      class="flex gap-2 items-centro" style="margin-top: var(--esp-3)">
+                    {% csrf_token %}
+                    <select name="usuario_id" style="max-width: 280px">
+                        {% for usuario in otros_usuarios %}
+                            <option value="{{ usuario.pk }}">
+                                {{ usuario.get_full_name|default:usuario.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% include "componentes/boton.html" with texto="Agregar" tipo="submit" variante="secundario" %}
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
