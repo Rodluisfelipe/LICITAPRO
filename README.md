@@ -11,6 +11,22 @@ la puerta de entrada: qué es esto, cómo se levanta, y qué hay construido hoy.
 
 ---
 
+## Estado actual — Primera entrega (base de la plataforma, 10 días)
+
+| Día | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Autenticación (Google Workspace, dominio restringido) | ✅ |
+| 2-3 | Perfiles y permisos configurables desde la interfaz | ✅ |
+| 4 | Procesos: creación manual, listado, filtros, flujo de etapas | ✅ |
+| 5-8 | Importador de Excel | ⏸️ bloqueado en insumos de `_legado/` (fuera del repo) |
+| 9 | Datos reales + prueba con usuarios | pendiente |
+| 10 | Despliegue | pendiente |
+
+Ver [Pendiente / conocido](#pendiente--conocido) para el detalle fino dentro
+de cada ítem ya cerrado.
+
+---
+
 ## Stack
 
 Python 3.12 · Django 5.2 · PostgreSQL 16 (`pgvector`, `pg_trgm`, `unaccent`) ·
@@ -142,6 +158,9 @@ Ver [Comandos](#comandos) para el resto del ciclo de desarrollo.
   los vuelve a exigir del lado del servidor — el drag&drop del kanban se
   deshabilita sin `mover_etapa` y el endpoint igual lo rechaza si alguien
   le pega directo.
+- `@permission_required(..., raise_exception=True)` en cada vista que lo
+  necesita, con una página 403 propia (`templates/403.html`) sobre
+  `tokens.css` en vez de la de Django por defecto.
 
 ### Cuenta y preferencias
 
